@@ -148,12 +148,12 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
       for (int32_t x = 0; x <= max_x; x += slide_wnd_step_x_) {
         wnd.x = x;
         feat_map_1->SetROI(wnd);
-
+				//three loops for scale_factor
         wnd_info.bbox.x = static_cast<int32_t>(x / scale_factor + 0.5);
         wnd_info.bbox.y = static_cast<int32_t>(y / scale_factor + 0.5);
 
         for (int32_t i = 0; i < hierarchy_size_[0]; i++) {
-					//three times loops for score
+					//four times loops for score
           if (model_[i]->Classify(&score)) {
             wnd_info.score = static_cast<double>(score);
             proposals[i].push_back(wnd_info);

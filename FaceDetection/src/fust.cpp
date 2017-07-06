@@ -153,6 +153,7 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
         wnd_info.bbox.y = static_cast<int32_t>(y / scale_factor + 0.5);
 
         for (int32_t i = 0; i < hierarchy_size_[0]; i++) {
+					//three times loops for score
           if (model_[i]->Classify(&score)) {
             wnd_info.score = static_cast<double>(score);
             proposals[i].push_back(wnd_info);
@@ -209,7 +210,7 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
           GetWindowData(img, bboxes[m].bbox);
           feat_map->Compute(wnd_data_.data(), wnd_size_, wnd_size_);
           feat_map->SetROI(roi);
-
+					//loops for score
           if (model_[model_idx]->Classify(&score, mlp_predicts.data())) {
             float x = static_cast<float>(bboxes[m].bbox.x);
             float y = static_cast<float>(bboxes[m].bbox.y);

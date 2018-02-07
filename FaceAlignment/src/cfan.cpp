@@ -106,7 +106,8 @@ CCFAN::~CCFAN(void)
 void CCFAN::InitModel(const char *model_path)
 {
   /*Open the model file*/
-  FILE *fp = fopen(model_path, "rb+");
+	FILE *fp;
+	fopen_s(&fp, model_path, "rb+");
   mean_shape_ = new float[pts_num_ * 2];
   fread(mean_shape_, sizeof(float), pts_num_ * 2, fp);
 
@@ -163,8 +164,8 @@ void CCFAN::FacialPointLocate(const unsigned char *gray_im, int im_width, int im
   int right_x = left_x + bbox_w - 1;
   int right_y = left_y + bbox_h - 1;
 
-  float extend_factor = 0.05;
-  float extend_revised_y = 0.05;
+  float extend_factor = 0.05f;
+  float extend_revised_y = 0.05f;
 
   /*Compute the extended region of the detected face*/
   int extend_lx = std::max(int(floor(left_x - extend_factor*bbox_w)), int(0));
@@ -244,7 +245,7 @@ void CCFAN::FacialPointLocate(const unsigned char *gray_im, int im_width, int im
       }
       else
       {
-        lan1_a[i + 1][j] = 1.0 / (1 + exp(-inner_product - lan1_b_[i][j]));
+        lan1_a[i + 1][j] = 1.0f / (1 + exp(-inner_product - lan1_b_[i][j]));
       }
 
     }
@@ -320,7 +321,7 @@ void CCFAN::FacialPointLocate(const unsigned char *gray_im, int im_width, int im
       }
       else
       {
-        lan2_a[i + 1][j] = 1.0 / (1 + exp(-inner_product - lan2_b_[i][j]));
+        lan2_a[i + 1][j] = 1.0f / (1 + exp(-inner_product - lan2_b_[i][j]));
       }
 
     }
@@ -391,8 +392,8 @@ void CCFAN::TtSift(const unsigned char *gray_im, int im_width, int im_height, fl
 void CCFAN::GetSubImg(const unsigned char *gray_im, int im_width, int im_height, float point_x, float point_y, int patch_size, BYTE *sub_img)
 {
   memset(sub_img, 128, patch_size*patch_size);
-  int center_x = floor(point_x + 0.5);
-  int center_y = floor(point_y + 0.5);
+  int center_x = static_cast<int>(floor(point_x + 0.5f));
+  int center_y = static_cast<int>(floor(point_y + 0.5f));
   int patch_left = std::max((center_x + 1) - patch_size / 2, 0);
   int patch_right = std::min((center_x + 1) + patch_size / 2 - 1, im_width - 1);
   int patch_top = std::max((center_y + 1) - patch_size / 2, 0);

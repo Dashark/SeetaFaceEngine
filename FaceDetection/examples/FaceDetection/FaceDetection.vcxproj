@@ -135,7 +135,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;FACEDETECTION_EXPORTS;SEETA_EXPORTS;USE_OPENMP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_SSE;WIN32;NDEBUG;_WINDOWS;_USRDLL;FACEDETECTION_EXPORTS;SEETA_EXPORTS;USE_OPENMP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>

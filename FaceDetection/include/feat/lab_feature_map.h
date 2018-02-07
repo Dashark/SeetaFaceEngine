@@ -57,7 +57,8 @@ class LABFeatureMap : public seeta::fd::FeatureMap {
   virtual void Compute(const uint8_t* input, int32_t width, int32_t height);
 
   inline uint8_t GetFeatureVal(int32_t offset_x, int32_t offset_y) const {
-    return feat_map_[(roi_.y + offset_y) * width_ + roi_.x + offset_x];
+	  int off = (roi_.y + offset_y) * width_ + roi_.x + offset_x;
+    return feat_map_.data()[off];
   }
 
   float GetStdDev() const;

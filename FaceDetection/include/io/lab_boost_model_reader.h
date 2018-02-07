@@ -43,8 +43,18 @@ namespace fd {
 
 class LABBoostModelReader : public ModelReader {
  public:
-  LABBoostModelReader() : ModelReader() {}
-  virtual ~LABBoostModelReader() {}
+  LABBoostModelReader() : ModelReader() {
+    num_bin_ = 0;
+	num_base_classifer_ = 0;
+	bin_buffer_ = nullptr;
+	classifier_buffer_ = nullptr;
+  }
+  virtual ~LABBoostModelReader() {
+	if (bin_buffer_ != nullptr)
+	  delete bin_buffer_;
+	if (classifier_buffer_ != nullptr)
+	  delete classifier_buffer_;
+  }
 
   virtual bool Read(std::istream* input, seeta::fd::Classifier* model);
 
@@ -56,6 +66,7 @@ class LABBoostModelReader : public ModelReader {
 
   int32_t num_bin_;
   int32_t num_base_classifer_;
+  float *bin_buffer_, *classifier_buffer_;
 };
 
 }  // namespace fd

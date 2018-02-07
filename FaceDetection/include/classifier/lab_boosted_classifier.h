@@ -51,10 +51,12 @@ class LABBaseClassifier {
  public:
   LABBaseClassifier()
     : num_bin_(255), thresh_(0.0f) {
-    weights_.resize(num_bin_ + 1);
+	  weights_ = new float[num_bin_];
   }
 
-  ~LABBaseClassifier() {}
+  ~LABBaseClassifier() {
+	  delete weights_;
+  }
 
   void SetWeights(const float* weights, int32_t num_bin);
 
@@ -67,7 +69,7 @@ class LABBaseClassifier {
  private:
   int32_t num_bin_;
 
-  std::vector<float> weights_;
+  float* weights_;
   float thresh_;
 };
 

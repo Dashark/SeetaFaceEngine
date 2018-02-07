@@ -42,6 +42,7 @@ bool CompareBBox(const seeta::FaceInfo & a, const seeta::FaceInfo & b) {
   return a.score > b.score;
 }
 
+//计算交并比，合并重复的脸框
 void NonMaximumSuppression(std::vector<seeta::FaceInfo>* bboxes,
   std::vector<seeta::FaceInfo>* bboxes_nms, float iou_thresh) {
   bboxes_nms->clear();

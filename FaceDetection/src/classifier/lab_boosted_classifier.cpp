@@ -38,16 +38,37 @@ namespace seeta {
 namespace fd {
 
 void LABBaseClassifier::SetWeights(const float* weights, int32_t num_bin) {
-  weights_.resize(num_bin + 1);
+	if (weights_ != nullptr)
+		delete weights_;
+	weights_ = new float[num_bin + 1];
+	memcpy_s(weights_, sizeof(float)*(num_bin + 1), weights, sizeof(float)*(num_bin + 1));
   num_bin_ = num_bin;
-  std::copy(weights, weights + num_bin_ + 1, weights_.begin());
+  //std::copy(weights, weights + num_bin_ + 1, weights_);
 }
 
 bool LABBoostedClassifier::Classify(float* score, float* outputs) {
   bool isPos = true;
   float s = 0.0f;
-
-  for (size_t i = 0; isPos && i < base_classifiers_.size();) {
+  int32_t count = 0;
+  seeta::fd::LABFeature* feat = feat_.data();
+  std::shared_ptr<seeta::fd::LABBaseClassifier>* base = base_classifiers_.data();
+  size_t size = base_classifiers_.size();
+  //std::vector<seeta::fd::LABFeature>::iterator feat_it = feat_.begin();
+  //std::vector<std::shared_ptr<seeta::fd::LABBaseClassifier> >::iterator classifier_it = base_classifiers_.begin();
+  for(int i=0;i<size;i++) {
+  //for (; feat_it != feat_.end() || classifier_it != base_classifiers_.end(); feat_it++,classifier_it++) {
+	  uint8_t featVal = feat_map_->GetFeatureVal(feat[i].x, feat[i].y);
+	  s += base[i]->weights(featVal);
+	  count += 1;
+	  if (count == kFeatGroupSize) {
+		  count = 0;
+		  if (s < base[i]->threshold()) {
+			  isPos = false;
+			  break;
+		  }
+	  }
+  }
+  /*for (size_t i = 0; isPos && i < base_classifiers_.size();) {
     for (int32_t j = 0; j < kFeatGroupSize; j++, i++) {
       uint8_t featVal = feat_map_->GetFeatureVal(feat_[i].x, feat_[i].y);
       s += base_classifiers_[i]->weights(featVal);
@@ -55,6 +76,7 @@ bool LABBoostedClassifier::Classify(float* score, float* outputs) {
     if (s < base_classifiers_[i - 1]->threshold())
       isPos = false;
   }
+  */
   isPos = isPos && ((!use_std_dev_) || feat_map_->GetStdDev() > kStdDevThresh);
 
   if (score != nullptr)

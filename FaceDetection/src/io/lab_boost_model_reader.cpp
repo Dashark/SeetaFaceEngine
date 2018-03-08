@@ -44,6 +44,8 @@ bool LABBoostModelReader::Read(std::istream* input,
 
   input->read(reinterpret_cast<char*>(&num_base_classifer_), sizeof(int32_t));
   input->read(reinterpret_cast<char*>(&num_bin_), sizeof(int32_t));
+  bin_buffer_ = new float[num_bin_ + 1];
+  classifier_buffer_ = new float[num_base_classifer_];
 
   is_read = (!input->fail()) && num_base_classifer_ > 0 && num_bin_ > 0 &&
     ReadFeatureParam(input, lab_boosted_classifier) &&
@@ -67,17 +69,17 @@ bool LABBoostModelReader::ReadFeatureParam(std::istream* input,
 
 bool LABBoostModelReader::ReadBaseClassifierParam(std::istream* input,
     seeta::fd::LABBoostedClassifier* model) {
-  std::vector<float> thresh;
-  thresh.resize(num_base_classifer_);
-  input->read(reinterpret_cast<char*>(thresh.data()),
+  //std::vector<float> thresh;
+  //thresh.resize(num_base_classifer_);
+  input->read(reinterpret_cast<char*>(classifier_buffer_),
     sizeof(float)* num_base_classifer_);
 
   int32_t weight_len = sizeof(float)* (num_bin_ + 1);
-  std::vector<float> weights;
-  weights.resize(num_bin_ + 1);
+  //std::vector<float> weights;
+  //weights.resize(num_bin_ + 1);
   for (int32_t i = 0; i < num_base_classifer_; i++) {
-    input->read(reinterpret_cast<char*>(weights.data()), weight_len);
-    model->AddBaseClassifier(weights.data(), num_bin_, thresh[i]);
+    input->read(reinterpret_cast<char*>(bin_buffer_), weight_len);
+    model->AddBaseClassifier(bin_buffer_, num_bin_, classifier_buffer_[i]);
   }
 
   return !input->fail();

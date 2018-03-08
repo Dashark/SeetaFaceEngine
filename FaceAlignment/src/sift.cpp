@@ -269,14 +269,14 @@ void SIFT::CalcSIFT(BYTE* gray_im, double* sift_feature)
   double max = 0.000001;
   for (int pt = 0; pt < param.image_pixel; pt++)
   {
-	  lf_gray_im[pt] = gray_im[pt];
+	  lf_gray_im[pt] = gray_im[pt];	//shark: 把BYTE搞成double是什么意思？
 	  if (lf_gray_im[pt] > max)
-		  max = lf_gray_im[pt];
+		  max = lf_gray_im[pt];		//shark：求最大值
   }
 
   for (int pt = 0; pt < param.image_pixel; pt++)
   {
-	  lf_gray_im[pt] = lf_gray_im[pt] / max;
+	  lf_gray_im[pt] = lf_gray_im[pt] / max;	//shark：求百分比需要double吗？
   }
 
   double* im_orientation = new double[param.image_pixel * param.angle_nums];

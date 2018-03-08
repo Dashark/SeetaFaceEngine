@@ -3,11 +3,14 @@ cmake_minimum_required(VERSION 3.1.0)
 project(seeta_facedet_lib)
 
 # Build options
-option(BUILD_EXAMPLES  "Set to ON to build examples"  ON)
-option(USE_OPENMP      "Set to ON to build use openmp"  ON)
-option(USE_SSE         "Set to ON to build use SSE"  ON)
+option(BUILD_EXAMPLES  "Set to ON to build examples"  OFF)
+option(USE_OPENMP      "Set to ON to build use openmp"  OFF)
+option(USE_SSE         "Set to ON to build use SSE"  OFF)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -fPIC -Wall -pg")
+SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
+SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pg")
+
 
 # Use C++11
 set(CMAKE_CXX_STANDARD 11)
@@ -23,7 +26,7 @@ endif()
 
 # Use OpenMP
 if (USE_OPENMP)
-    find_package(OpenMP QUIET)
+    find_package(OpenMP)
     if (OPENMP_FOUND)
         message(STATUS "Use OpenMP")
         add_definitions(-DUSE_OPENMP)
@@ -50,8 +53,13 @@ set(src_files
     )
 
 # Build shared library
-add_library(seeta_facedet_lib SHARED ${src_files})
-set(facedet_required_libs seeta_facedet_lib)
+# add_library(seeta_facedet_lib SHARED ${src_files})
+# set(facedet_required_libs seeta_facedet_lib)
+# Build static library
+add_library(seeta_facedet_lib_static STATIC ${src_files})
+include_directories(../../../../libs/fixmath/fixmath/include)
+target_link_libraries(seeta_facedet_lib_static fixmath)
+set(facedet_required_libs seeta_facedet_lib_static)
 
 # Build examples
 if (BUILD_EXAMPLES)

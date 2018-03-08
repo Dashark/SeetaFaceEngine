@@ -33,6 +33,8 @@
 #define SEETA_COMMON_H_
 
 #include <cstdint>
+#include "fixmath.h"
+#define FIXMATH_FRAC_BITS 16
 
 #if defined _WIN32
 #ifdef SEETA_EXPORTS

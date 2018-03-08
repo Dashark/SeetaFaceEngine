@@ -136,7 +136,7 @@ class MathFunction {
 #endif
   }
 
-  static inline float VectorInnerProduct(const float* x, const float* y,
+static inline float VectorInnerProduct(const float* x, const float* y,
       int32_t len) {
     float prod = 0;
     int32_t i;
@@ -160,7 +160,15 @@ class MathFunction {
         prod += x[i] * y[i];
 #endif
     return prod;
+}
+static inline float VectorInnerProductfx(const float* x, const float* y,
+      int32_t len) {
+  fixed_t prod = 0;
+  int32_t i;
+  for(i=0; i<len; i++) {
+    prod += fx_mulx(fx_ftox(x[i], FIXMATH_FRAC_BITS), fx_ftox(y[i], FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS);
   }
+  return fx_xtof(prod, FIXMATH_FRAC_BITS);
 };
 
 }  // namespace fd

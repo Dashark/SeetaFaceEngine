@@ -61,7 +61,7 @@ class LABFeatureMap : public seeta::fd::FeatureMap {
     return feat_map_.data()[off];
   }
 
-  float GetStdDev() const;
+  fixed_t GetStdDev() const;
 
  private:
   void Reshape(int32_t width, int32_t height);

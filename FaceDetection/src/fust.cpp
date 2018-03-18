@@ -180,7 +180,7 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
 
   seeta::ImageData img = img_pyramid->image1x();
   seeta::Rect roi;
-  std::vector<fixed_t> mlp_predicts(4);  // @todo no hard-coded number!
+  fixed_t mlp_predicts[4];  // @todo no hard-coded number!
   roi.x = roi.y = 0;
   roi.width = roi.height = wnd_size_;
 
@@ -215,7 +215,7 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
           feat_map->Compute(wnd_data_.data(), wnd_size_, wnd_size_);
           feat_map->SetROI(roi);
 					//loops for score
-          if (model_[model_idx]->Classify(&score, mlp_predicts.data())) {
+          if (model_[model_idx]->Classify(&score, mlp_predicts)) {
             float x = static_cast<float>(bboxes[m].bbox.x);
             float y = static_cast<float>(bboxes[m].bbox.y);
             float w = static_cast<float>(bboxes[m].bbox.width);

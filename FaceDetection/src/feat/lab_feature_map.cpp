@@ -50,10 +50,10 @@ void LABFeatureMap::Compute(const uint8_t* input, int32_t width,
   ComputeFeatureMap();
 }
 
-float LABFeatureMap::GetStdDev() const {
-  double mean;
-  double m2;
-  double area = roi_.width * roi_.height;
+fixed_t LABFeatureMap::GetStdDev() const {
+  int32_t mean;
+  int32_t m2;
+  int32_t area = roi_.width * roi_.height;
 
   int32_t top_left;
   int32_t top_right;
@@ -68,31 +68,32 @@ float LABFeatureMap::GetStdDev() const {
       bottom_right = bottom_left + roi_.width;
 
       mean = (int_img_[bottom_right] - int_img_[bottom_left] +
-        int_img_[top_left] - int_img_[top_right]) / area;
+        int_img_[top_left] - int_img_[top_right]);
       m2 = (square_int_img_[bottom_right] - square_int_img_[bottom_left] +
-        square_int_img_[top_left] - square_int_img_[top_right]) / area;
+        square_int_img_[top_left] - square_int_img_[top_right]);
     } else {
       bottom_left = (roi_.height - 1) * width_ + roi_.x - 1;
       bottom_right = bottom_left + roi_.width;
 
-      mean = (int_img_[bottom_right] - int_img_[bottom_left]) / area;
-      m2 = (square_int_img_[bottom_right] - square_int_img_[bottom_left]) / area;
+      mean = (int_img_[bottom_right] - int_img_[bottom_left]);
+      m2 = (square_int_img_[bottom_right] - square_int_img_[bottom_left]);
     }
   } else {
     if (roi_.y != 0) {
       top_right = (roi_.y - 1) * width_ + roi_.width - 1;
       bottom_right = top_right + roi_.height * width_;
 
-      mean = (int_img_[bottom_right] - int_img_[top_right]) / area;
-      m2 = (square_int_img_[bottom_right] - square_int_img_[top_right]) / area;
+      mean = (int_img_[bottom_right] - int_img_[top_right]);
+      m2 = (square_int_img_[bottom_right] - square_int_img_[top_right]);
     } else {
       bottom_right = (roi_.height - 1) * width_ + roi_.width - 1;
-      mean = int_img_[bottom_right] / area;
-      m2 = square_int_img_[bottom_right] / area;
+      mean = int_img_[bottom_right];
+      m2 = square_int_img_[bottom_right];
     }
   }
-
-  return static_cast<float>(std::sqrt(m2 - mean * mean));
+  fixed_t temp = fx_itox(m2*area - mean * mean, FIXMATH_FRAC_BITS);
+  temp = fx_sqrtx(temp, FIXMATH_FRAC_BITS);
+  return fx_divx(temp, area, FIXMATH_FRAC_BITS);
 }
 
 void LABFeatureMap::Reshape(int32_t width, int32_t height) {

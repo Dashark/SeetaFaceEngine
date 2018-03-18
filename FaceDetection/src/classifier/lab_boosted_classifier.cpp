@@ -33,7 +33,7 @@
 
 #include <memory>
 #include <string>
-#include<string.h>
+//#include<string.h>
 
 
 namespace seeta {
@@ -43,7 +43,7 @@ namespace fd {
 	if (weights_ != nullptr)
 		delete weights_;
 	weights_ = new fixed_t[num_bin + 1];
-	memcpy(weights_, weights, sizeof(fixed_t)*(num_bin + 1));
+	std::memcpy(weights_, weights, sizeof(fixed_t)*(num_bin + 1));
   num_bin_ = num_bin;
   //std::copy(weights, weights + num_bin_ + 1, weights_);
 }

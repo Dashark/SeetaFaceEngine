@@ -40,13 +40,10 @@ void MLPLayer::Compute(const float* input, float* output) {
 #pragma omp parallel num_threads(SEETA_NUM_THREADS)
   {
 #pragma omp for nowait
-    float test = 0.0f;
+
     for (int32_t i = 0; i < output_dim_; i++) {
-      output[i] = seeta::fd::MathFunction::VectorInnerProduct(input,
+      output[i] = seeta::fd::MathFunction::VectorInnerProductfx(input,
         weights_.data() + i * input_dim_, input_dim_) + bias_[i];
-      test = seeta::fd::MathFunction::VectorInnerProductfx(input,
-        weights_.data() + i * input_dim_, input_dim_) + bias_[i];
-      std::cout << "original:" << output[i] << "\tfixtype:" << test << "\tdiff:" << output[i]-test << std::endl;
       output[i] = (act_func_type_ == 1 ? ReLU(output[i]) : Sigmoid(-output[i]));
     }
   }

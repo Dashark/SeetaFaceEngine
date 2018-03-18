@@ -103,10 +103,9 @@ int main(int argc, char** argv) {
 
     cv::rectangle(img, face_rect, CV_RGB(0, 0, 255), 4, 8, 0);
   }
-  /*
+
   cv::namedWindow("Test", cv::WINDOW_AUTOSIZE);
   cv::imshow("Test", img);
   cv::waitKey(0);
   cv::destroyAllWindows();
-  */
 }

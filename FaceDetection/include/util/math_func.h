@@ -37,6 +37,8 @@
 #endif
 
 #include <cstdint>
+#include <fixmath.h>
+#define FIXMATH_FRAC_BITS 16
 
 namespace seeta {
 namespace fd {
@@ -169,6 +171,7 @@ static inline float VectorInnerProductfx(const float* x, const float* y,
     prod += fx_mulx(fx_ftox(x[i], FIXMATH_FRAC_BITS), fx_ftox(y[i], FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS);
   }
   return fx_xtof(prod, FIXMATH_FRAC_BITS);
+}
 };
 
 }  // namespace fd

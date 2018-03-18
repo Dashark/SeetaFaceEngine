@@ -33,6 +33,7 @@
 
 #include <memory>
 #include <string>
+#include <cstring>
 
 namespace seeta {
 namespace fd {
@@ -41,7 +42,7 @@ void LABBaseClassifier::SetWeights(const float* weights, int32_t num_bin) {
 	if (weights_ != nullptr)
 		delete weights_;
 	weights_ = new float[num_bin + 1];
-	memcpy_s(weights_, sizeof(float)*(num_bin + 1), weights, sizeof(float)*(num_bin + 1));
+  std::memcpy(weights_,  weights, sizeof(float)*(num_bin + 1));
   num_bin_ = num_bin;
   //std::copy(weights, weights + num_bin_ + 1, weights_);
 }

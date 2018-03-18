@@ -57,8 +57,8 @@ set(src_files
 # set(facedet_required_libs seeta_facedet_lib)
 # Build static library
 add_library(seeta_facedet_lib_static STATIC ${src_files})
-include_directories(../../../../libs/fixmath/fixmath/include)
-target_link_libraries(seeta_facedet_lib_static fixmath)
+include_directories(/home/axis/Downloads/fixmath-1.4/include)
+target_link_libraries(seeta_facedet_lib_static /home/axis/Downloads/fixmath-1.4/src/.libs/libfixmath.a)
 set(facedet_required_libs seeta_facedet_lib_static)
 
 # Build examples

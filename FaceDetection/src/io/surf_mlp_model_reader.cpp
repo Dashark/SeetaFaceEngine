@@ -35,6 +35,7 @@
 
 #include "classifier/surf_mlp.h"
 
+
 namespace seeta {
 namespace fd {
 
@@ -46,7 +47,7 @@ bool SURFMLPModelReader::Read(std::istream* input,
   int32_t num_feat;
   int32_t input_dim;
   int32_t output_dim;
-  float thresh;
+  fixed_t thresh;
 
   input->read(reinterpret_cast<char*>(&num_layer), sizeof(int32_t));
   if (num_layer <= 0) {

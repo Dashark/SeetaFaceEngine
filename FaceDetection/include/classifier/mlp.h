@@ -40,6 +40,7 @@
 
 #include "util/math_func.h"
 
+
 namespace seeta {
 namespace fd {
 
@@ -49,7 +50,7 @@ class MLPLayer {
       : input_dim_(0), output_dim_(0), act_func_type_(act_func_type) {}
   ~MLPLayer() {}
 
-  void Compute(const float* input, float* output);
+  void Compute(const fixed_t* input, fixed_t* output);
 
   inline int32_t GetInputDim() const { return input_dim_; }
   inline int32_t GetOutputDim() const { return output_dim_; }
@@ -64,14 +65,14 @@ class MLPLayer {
     bias_.resize(outputDim);
   }
 
-  inline void SetWeights(const float* weights, int32_t len) {
+  inline void SetWeights(const fixed_t* weights, int32_t len) {
     if (weights == nullptr || len != input_dim_ * output_dim_) {
       return;  // @todo handle the errors!!!
     }
     std::copy(weights, weights + input_dim_ * output_dim_, weights_.begin());
   }
 
-  inline void SetBias(const float* bias, int32_t len) {
+  inline void SetBias(const fixed_t* bias, int32_t len) {
     if (bias == nullptr || len != output_dim_) {
       return;  // @todo handle the errors!!!
     }
@@ -79,20 +80,21 @@ class MLPLayer {
   }
 
  private:
-  inline float Sigmoid(float x) {
-    return 1.0f / (1.0f + std::exp(x));
+	inline fixed_t Sigmoid(fixed_t x) {
+		return fx_divx(1, 1 + fx_expx(x, FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS);
+    //return 1.0f / (1.0f + std::exp(x));
   }
 
-  inline float ReLU(float x) {
-    return (x > 0.0f ? x : 0.0f);
+  inline fixed_t ReLU(fixed_t x) {
+    return (x > 0 ? x : 0);
   }
 
  private:
   int32_t act_func_type_;
   int32_t input_dim_;
   int32_t output_dim_;
-  std::vector<float> weights_;
-  std::vector<float> bias_;
+  std::vector<fixed_t> weights_;
+  std::vector<fixed_t> bias_;
 };
 
 
@@ -101,7 +103,7 @@ class MLP {
   MLP() {}
   ~MLP() {}
 
-  void Compute(const float* input, float* output);
+  void Compute(const fixed_t* input, fixed_t* output);
 
   inline int32_t GetInputDim() const {
     return layers_[0]->GetInputDim();
@@ -115,12 +117,12 @@ class MLP {
     return static_cast<int32_t>(layers_.size());
   }
 
-  void AddLayer(int32_t inputDim, int32_t outputDim, const float* weights,
-      const float* bias, bool is_output = false);
+  void AddLayer(int32_t inputDim, int32_t outputDim, const fixed_t* weights,
+	  const fixed_t* bias, bool is_output = false);
 
  private:
   std::vector<std::shared_ptr<seeta::fd::MLPLayer> > layers_;
-  std::vector<float> layer_buf_[2];
+  std::vector<fixed_t> layer_buf_[2];
 };
 
 }  // namespace fd

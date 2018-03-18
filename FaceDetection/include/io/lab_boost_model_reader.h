@@ -38,6 +38,7 @@
 #include "model_reader.h"
 #include "classifier/lab_boosted_classifier.h"
 
+
 namespace seeta {
 namespace fd {
 
@@ -66,7 +67,7 @@ class LABBoostModelReader : public ModelReader {
 
   int32_t num_bin_;
   int32_t num_base_classifer_;
-  float *bin_buffer_, *classifier_buffer_;
+  fixed_t *bin_buffer_, *classifier_buffer_;
 };
 
 }  // namespace fd

@@ -40,6 +40,8 @@
 #include "classifier.h"
 #include "feat/lab_feature_map.h"
 
+
+
 namespace seeta {
 namespace fd {
 
@@ -50,27 +52,27 @@ namespace fd {
 class LABBaseClassifier {
  public:
   LABBaseClassifier()
-    : num_bin_(255), thresh_(0.0f) {
-	  weights_ = new float[num_bin_];
+    : num_bin_(255), thresh_(0) {
+	  weights_ = new fixed_t[num_bin_+1];
   }
 
   ~LABBaseClassifier() {
 	  delete weights_;
   }
 
-  void SetWeights(const float* weights, int32_t num_bin);
+  void SetWeights(const fixed_t* weights, int32_t num_bin);
 
-  inline void SetThreshold(float thresh) { thresh_ = thresh; }
+  inline void SetThreshold(fixed_t thresh) { thresh_ = thresh; }
 
   inline int32_t num_bin() const { return num_bin_; }
-  inline float weights(int32_t val) const { return weights_[val]; }
-  inline float threshold() const { return thresh_; }
+  inline fixed_t weights(int32_t val) const { return weights_[val]; }
+  inline fixed_t threshold() const { return thresh_; }
 
  private:
   int32_t num_bin_;
 
-  float* weights_;
-  float thresh_;
+  fixed_t * weights_;
+  fixed_t  thresh_;
 };
 
 /**
@@ -82,14 +84,14 @@ class LABBoostedClassifier : public Classifier {
   LABBoostedClassifier() : use_std_dev_(true) {}
   virtual ~LABBoostedClassifier() {}
 
-  virtual bool Classify(float* score = nullptr, float* outputs = nullptr);
+  virtual bool Classify(fixed_t* score = nullptr, fixed_t* outputs = nullptr);
 
   inline virtual seeta::fd::ClassifierType type() {
     return seeta::fd::ClassifierType::LAB_Boosted_Classifier;
   }
 
   void AddFeature(int32_t x, int32_t y);
-  void AddBaseClassifier(const float* weights, int32_t num_bin, float thresh);
+  void AddBaseClassifier(const fixed_t* weights, int32_t num_bin, fixed_t thresh);
 
   inline virtual void SetFeatureMap(seeta::fd::FeatureMap* featMap) {
     feat_map_ = dynamic_cast<seeta::fd::LABFeatureMap*>(featMap);
@@ -99,7 +101,7 @@ class LABBoostedClassifier : public Classifier {
 
  private:
   static const int32_t kFeatGroupSize = 10;
-  const float kStdDevThresh = 10.0f;
+  const fixed_t kStdDevThresh = 10;
 
   std::vector<seeta::fd::LABFeature> feat_;
   std::vector<std::shared_ptr<seeta::fd::LABBaseClassifier> > base_classifiers_;

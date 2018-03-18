@@ -37,6 +37,7 @@
 
 #include "model_reader.h"
 
+
 namespace seeta {
 namespace fd {
 
@@ -49,8 +50,8 @@ class SURFMLPModelReader : public ModelReader {
 
  private:
   std::vector<int32_t> feat_id_buf_;
-  std::vector<float> weights_buf_;
-  std::vector<float> bias_buf_;
+  std::vector<fixed_t> weights_buf_;
+  std::vector<fixed_t> bias_buf_;
 };
 
 }  // namespace fd

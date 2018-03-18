@@ -34,6 +34,8 @@
 
 #include "common.h"
 #include "feature_map.h"
+#include "fixmath.h"
+#define FIXMATH_FRAC_BITS 16
 
 namespace seeta {
 namespace fd {
@@ -49,7 +51,7 @@ class Classifier {
   virtual ~Classifier() {}
 
   virtual void SetFeatureMap(seeta::fd::FeatureMap* feat_map) = 0;
-  virtual bool Classify(float* score = nullptr, float* outputs = nullptr) = 0;
+  virtual bool Classify(fixed_t* score = nullptr, fixed_t* outputs = nullptr) = 0;
   
   virtual seeta::fd::ClassifierType type() = 0;
 

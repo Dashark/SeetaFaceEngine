@@ -32,27 +32,29 @@
 #include "classifier/mlp.h"
 
 #include "common.h"
+#include <time.h>
+#include <iostream>
 
 namespace seeta {
 namespace fd {
 
-void MLPLayer::Compute(const float* input, float* output) {
+	void MLPLayer::Compute(const fixed_t* input, fixed_t* output) {
 #pragma omp parallel num_threads(SEETA_NUM_THREADS)
   {
-#pragma omp for nowait
-    float test = 0.0f;
+#pragma omp for nowait 
+    clock_t t0 = clock();    
     for (int32_t i = 0; i < output_dim_; i++) {
-      output[i] = seeta::fd::MathFunction::VectorInnerProduct(input,
+      output[i] = seeta::fd::MathFunction::VectorInnerProductfx(input,
         weights_.data() + i * input_dim_, input_dim_) + bias_[i];
-      test = seeta::fd::MathFunction::VectorInnerProductfx(input,
-        weights_.data() + i * input_dim_, input_dim_) + bias_[i];
-      std::cout << "original:" << output[i] << "\tfixtype:" << test << "\tdiff:" << output[i]-test << std::endl;
+
       output[i] = (act_func_type_ == 1 ? ReLU(output[i]) : Sigmoid(-output[i]));
     }
+    clock_t t1 = clock();
+    std::cout << "MLPLayer::Compute time   " << t1-t0 << std::endl;
   }
 }
 
-void MLP::Compute(const float* input, float* output) {
+void MLP::Compute(const fixed_t* input, fixed_t* output) {
   layer_buf_[0].resize(layers_[0]->GetOutputDim());
   layers_[0]->Compute(input, layer_buf_[0].data());
 
@@ -64,8 +66,8 @@ void MLP::Compute(const float* input, float* output) {
   layers_.back()->Compute(layer_buf_[(i + 1) % 2].data(), output);
 }
 
-void MLP::AddLayer(int32_t inputDim, int32_t outputDim, const float* weights,
-    const float* bias, bool is_output) {
+void MLP::AddLayer(int32_t inputDim, int32_t outputDim, const fixed_t* weights,
+	const fixed_t* bias, bool is_output) {
   if (layers_.size() > 0 && inputDim != layers_.back()->GetOutputDim())
     return;  // @todo handle the errors!!!
 

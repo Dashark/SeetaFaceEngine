@@ -33,6 +33,7 @@
 
 #include <vector>
 
+
 namespace seeta {
 namespace fd {
 
@@ -44,8 +45,8 @@ bool LABBoostModelReader::Read(std::istream* input,
 
   input->read(reinterpret_cast<char*>(&num_base_classifer_), sizeof(int32_t));
   input->read(reinterpret_cast<char*>(&num_bin_), sizeof(int32_t));
-  bin_buffer_ = new float[num_bin_ + 1];
-  classifier_buffer_ = new float[num_base_classifer_];
+  bin_buffer_ = new fixed_t[num_bin_ + 1];
+  classifier_buffer_ = new fixed_t[num_base_classifer_];
 
   is_read = (!input->fail()) && num_base_classifer_ > 0 && num_bin_ > 0 &&
     ReadFeatureParam(input, lab_boosted_classifier) &&

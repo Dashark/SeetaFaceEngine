@@ -39,6 +39,7 @@
 #include "classifier/mlp.h"
 #include "feat/surf_feature_map.h"
 
+
 namespace seeta {
 namespace fd {
 
@@ -47,7 +48,7 @@ class SURFMLP : public Classifier {
   SURFMLP() : Classifier(), model_(new seeta::fd::MLP()) {}
   virtual ~SURFMLP() {}
 
-  virtual bool Classify(float* score = nullptr, float* outputs = nullptr);
+  virtual bool Classify(fixed_t* score = nullptr, fixed_t* outputs = nullptr);
 
   inline virtual void SetFeatureMap(seeta::fd::FeatureMap* feat_map) {
     feat_map_ = dynamic_cast<seeta::fd::SURFFeatureMap*>(feat_map);
@@ -58,18 +59,18 @@ class SURFMLP : public Classifier {
   }
 
   void AddFeatureByID(int32_t feat_id);
-  void AddLayer(int32_t input_dim, int32_t output_dim, const float* weights,
-    const float* bias, bool is_output = false);
+  void AddLayer(int32_t input_dim, int32_t output_dim, const fixed_t* weights,
+	  const fixed_t* bias, bool is_output = false);
 
-  inline void SetThreshold(float thresh) { thresh_ = thresh; }
+  inline void SetThreshold(fixed_t thresh) { thresh_ = thresh; }
 
  private:
   std::vector<int32_t> feat_id_;
-  std::vector<float> input_buf_;
-  std::vector<float> output_buf_;
+  std::vector<fixed_t> input_buf_;
+  std::vector<fixed_t> output_buf_;
 
   std::shared_ptr<seeta::fd::MLP> model_;
-  float thresh_;
+  fixed_t thresh_;
   seeta::fd::SURFFeatureMap* feat_map_;
 };
 

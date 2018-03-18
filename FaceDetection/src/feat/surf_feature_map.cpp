@@ -32,6 +32,7 @@
 #include <cmath>
 #include "feat/surf_feature_map.h"
 
+
 namespace seeta {
 namespace fd {
 
@@ -115,7 +116,7 @@ void SURFFeatureMap::Compute(const uint8_t* input, int32_t width,
   ComputeIntegralImages();
 }
 
-void SURFFeatureMap::GetFeatureVector(int32_t feat_id, float* feat_vec) {
+void SURFFeatureMap::GetFeatureVector(int32_t feat_id, fixed_t* feat_vec) {
   if (buf_valid_[feat_id] == 0) {
     ComputeFeatureVector(feat_pool_[feat_id], feat_vec_buf_[feat_id].data());
     NormalizeFeatureVectorL2(feat_vec_buf_[feat_id].data(),
@@ -482,10 +483,10 @@ void SURFFeatureMap::ComputeFeatureVector(const SURFFeature & feat,
 }
 
 void SURFFeatureMap::NormalizeFeatureVectorL2(const int32_t* feat_vec,
-    float* feat_vec_normed, int32_t len) const {
-  double prod = 0.0;
-  float norm_l2 = 0.0f;
-
+	fixed_t* feat_vec_normed, int32_t len) const {
+  fixed_t prod = 0;
+  fixed_t norm_l2 = 0;
+  /*
   for (int32_t i = 0; i < len; i++)
     prod += static_cast<double>(feat_vec[i] * feat_vec[i]);
   if (prod != 0) {
@@ -495,6 +496,18 @@ void SURFFeatureMap::NormalizeFeatureVectorL2(const int32_t* feat_vec,
   } else {
     for (int32_t i = 0; i < len; i++)
       feat_vec_normed[i] = 0.0f;
+  }
+  */
+  for (int32_t i = 0; i < len; i++)
+	  prod += feat_vec[i] * feat_vec[i];
+  if (prod != 0) {
+	  norm_l2 = fx_sqrtx(fx_itox(prod,16), 16);
+	  for (int32_t i = 0; i < len; i++)
+		  feat_vec_normed[i] = fx_divx(fx_itox(feat_vec[i], 16) , norm_l2,16);
+  }
+  else {
+	  for (int32_t i = 0; i < len; i++)
+		  feat_vec_normed[i] = 0;
   }
 }
 

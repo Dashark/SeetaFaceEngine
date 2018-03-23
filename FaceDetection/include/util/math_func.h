@@ -138,7 +138,7 @@ class MathFunction {
 #endif
   }
 
-static inline float VectorInnerProduct(const float* x, const float* y,
+  static inline float VectorInnerProduct(const float* x, const float* y,
       int32_t len) {
     float prod = 0;
     int32_t i;

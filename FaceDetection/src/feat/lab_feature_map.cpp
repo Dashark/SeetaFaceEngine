@@ -50,49 +50,54 @@ void LABFeatureMap::Compute(const uint8_t* input, int32_t width,
   ComputeFeatureMap();
 }
 
-float LABFeatureMap::GetStdDev() const {
-  double mean;
-  double m2;
-  double area = roi_.width * roi_.height;
+fixed_t LABFeatureMap::GetStdDev() const {
 
-  int32_t top_left;
-  int32_t top_right;
-  int32_t bottom_left;
-  int32_t bottom_right;
 
-  if (roi_.x != 0) {
-    if (roi_.y != 0) {
-      top_left = (roi_.y - 1) * width_ + roi_.x - 1;
-      top_right = top_left + roi_.width;
-      bottom_left = top_left + roi_.height * width_;
-      bottom_right = bottom_left + roi_.width;
+	fixed_t mean;
+	fixed_t m2;
+	int32_t area = roi_.width * roi_.height;
 
-      mean = (int_img_[bottom_right] - int_img_[bottom_left] +
-        int_img_[top_left] - int_img_[top_right]) / area;
-      m2 = (square_int_img_[bottom_right] - square_int_img_[bottom_left] +
-        square_int_img_[top_left] - square_int_img_[top_right]) / area;
-    } else {
-      bottom_left = (roi_.height - 1) * width_ + roi_.x - 1;
-      bottom_right = bottom_left + roi_.width;
+	int32_t top_left;
+	int32_t top_right;
+	int32_t bottom_left;
+	int32_t bottom_right;
 
-      mean = (int_img_[bottom_right] - int_img_[bottom_left]) / area;
-      m2 = (square_int_img_[bottom_right] - square_int_img_[bottom_left]) / area;
-    }
-  } else {
-    if (roi_.y != 0) {
-      top_right = (roi_.y - 1) * width_ + roi_.width - 1;
-      bottom_right = top_right + roi_.height * width_;
+	if (roi_.x != 0) {
+		if (roi_.y != 0) {
+			top_left = (roi_.y - 1) * width_ + roi_.x - 1;
+			top_right = top_left + roi_.width;
+			bottom_left = top_left + roi_.height * width_;
+			bottom_right = bottom_left + roi_.width;
 
-      mean = (int_img_[bottom_right] - int_img_[top_right]) / area;
-      m2 = (square_int_img_[bottom_right] - square_int_img_[top_right]) / area;
-    } else {
-      bottom_right = (roi_.height - 1) * width_ + roi_.width - 1;
-      mean = int_img_[bottom_right] / area;
-      m2 = square_int_img_[bottom_right] / area;
-    }
-  }
+			mean = fx_divx(int_img_[bottom_right] - int_img_[bottom_left] +
+				int_img_[top_left] - int_img_[top_right], area,16);
+			m2 = fx_divx(square_int_img_[bottom_right] - square_int_img_[bottom_left] +
+				square_int_img_[top_left] - square_int_img_[top_right], area, 16);
+		}
+		else {
+			bottom_left = (roi_.height - 1) * width_ + roi_.x - 1;
+			bottom_right = bottom_left + roi_.width;
 
-  return static_cast<float>(std::sqrt(m2 - mean * mean));
+			mean = fx_divx(int_img_[bottom_right] - int_img_[bottom_left], area,16);
+			m2 = fx_divx(square_int_img_[bottom_right] - square_int_img_[bottom_left], area, 16);
+		}
+	}
+	else {
+		if (roi_.y != 0) {
+			top_right = (roi_.y - 1) * width_ + roi_.width - 1;
+			bottom_right = top_right + roi_.height * width_;
+
+			mean = fx_divx(int_img_[bottom_right] - int_img_[top_right], area, 16);
+			m2 = fx_divx(square_int_img_[bottom_right] - square_int_img_[top_right], area, 16);
+		}
+		else {
+			bottom_right = (roi_.height - 1) * width_ + roi_.width - 1;
+			mean = fx_divx(int_img_[bottom_right], area, 16);
+			m2 = fx_divx(square_int_img_[bottom_right], area, 16);
+		}
+	}
+
+	return fx_sqrtx(m2 - fx_mulx(mean, mean, 16), 16);
 }
 
 void LABFeatureMap::Reshape(int32_t width, int32_t height) {

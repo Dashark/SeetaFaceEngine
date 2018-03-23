@@ -122,7 +122,7 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
   float score;
   seeta::FaceInfo wnd_info;
   seeta::Rect wnd;
-  float scale_factor = 0.0;
+  int32_t scale_factor = 0;
   const seeta::ImageData* img_scaled =
     img_pyramid->GetNextScaleImage(&scale_factor);
 
@@ -138,7 +138,7 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
     feat_map_1->Compute(img_scaled->data, img_scaled->width,
       img_scaled->height);
 
-    wnd_info.bbox.width = static_cast<int32_t>(wnd_size_ / scale_factor + 0.5);
+	wnd_info.bbox.width = (((wnd_size_ * 1000000) / scale_factor) * 10 + 5) / 10;
     wnd_info.bbox.height = wnd_info.bbox.width;
 
     int32_t max_x = img_scaled->width - wnd_size_;
@@ -148,9 +148,9 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
       for (int32_t x = 0; x <= max_x; x += slide_wnd_step_x_) {
         wnd.x = x;
         feat_map_1->SetROI(wnd);
-				//three loops for scale_factor
-        wnd_info.bbox.x = static_cast<int32_t>(x / scale_factor + 0.5);
-        wnd_info.bbox.y = static_cast<int32_t>(y / scale_factor + 0.5);
+
+		wnd_info.bbox.x = (((x * 1000000) / scale_factor) * 10 + 5) / 10;
+		wnd_info.bbox.y = (((y * 1000000) / scale_factor) * 10 + 5) / 10;
 
         for (int32_t i = 0; i < hierarchy_size_[0]; i++) {
 					//four times loops for score

@@ -34,10 +34,10 @@
 namespace seeta {
 namespace fd {
 
-const seeta::ImageData* ImagePyramid::GetNextScaleImage(float* scale_factor) {
+	const seeta::ImageData* ImagePyramid::GetNextScaleImage(int32_t* scale_factor) {
   if (scale_factor_ >= min_scale_) {
     if (scale_factor != nullptr)
-      *scale_factor = scale_factor_;
+      *scale_factor = scale_factor_*1000000;
 
     width_scaled_ = static_cast<int32_t>(width1x_ * scale_factor_);
     height_scaled_ = static_cast<int32_t>(height1x_ * scale_factor_);

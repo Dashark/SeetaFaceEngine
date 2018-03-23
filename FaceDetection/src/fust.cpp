@@ -31,6 +31,8 @@
 
 #include "fust.h"
 
+#include <iostream>
+#include <time.h>
 #include <map>
 #include <memory>
 #include <string>
@@ -43,6 +45,7 @@
 #include "io/lab_boost_model_reader.h"
 #include "io/surf_mlp_model_reader.h"
 #include "util/nms.h"
+
 
 namespace seeta {
 namespace fd {
@@ -116,13 +119,12 @@ bool FuStDetector::LoadModel(const std::string & model_path) {
 
   return is_loaded;
 }
-
 std::vector<seeta::FaceInfo> FuStDetector::Detect(
     seeta::fd::ImagePyramid* img_pyramid) {
   float score;
   seeta::FaceInfo wnd_info;
   seeta::Rect wnd;
-  int32_t scale_factor = 0;
+  int32_t scale_factor = 0.0;
   const seeta::ImageData* img_scaled =
     img_pyramid->GetNextScaleImage(&scale_factor);
 
@@ -133,12 +135,12 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
   std::vector<std::vector<seeta::FaceInfo> > proposals(hierarchy_size_[0]);
   std::shared_ptr<seeta::fd::FeatureMap> & feat_map_1 =
     feat_map_[cls2feat_idx_[model_[0]->type()]];
-
+  clock_t t0 = clock();
   while (img_scaled != nullptr) {
     feat_map_1->Compute(img_scaled->data, img_scaled->width,
       img_scaled->height);
 
-	wnd_info.bbox.width = (((wnd_size_ * 1000000) / scale_factor) * 10 + 5) / 10;
+    wnd_info.bbox.width = (((wnd_size_ * 1000000) / scale_factor) * 10 + 5) / 10;
     wnd_info.bbox.height = wnd_info.bbox.width;
 
     int32_t max_x = img_scaled->width - wnd_size_;
@@ -148,14 +150,14 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
       for (int32_t x = 0; x <= max_x; x += slide_wnd_step_x_) {
         wnd.x = x;
         feat_map_1->SetROI(wnd);
-
-		wnd_info.bbox.x = (((x * 1000000) / scale_factor) * 10 + 5) / 10;
-		wnd_info.bbox.y = (((y * 1000000) / scale_factor) * 10 + 5) / 10;
+				//three loops for scale_factor
+        wnd_info.bbox.x = (((x * 1000000) / scale_factor) * 10 + 5) / 10;
+        wnd_info.bbox.y = (((y * 1000000) / scale_factor) * 10 + 5) / 10;
 
         for (int32_t i = 0; i < hierarchy_size_[0]; i++) {
 					//four times loops for score
-          if (model_[i]->Classify(&score)) {
-            wnd_info.score = static_cast<double>(score);
+			if (model_[i]->Classify(&score)) {
+				wnd_info.score = static_cast<double>(score);
             proposals[i].push_back(wnd_info);
           }
         }
@@ -164,19 +166,21 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
 
     img_scaled = img_pyramid->GetNextScaleImage(&scale_factor);
   }
-
+  clock_t t1 = clock();
+  std::cout << "FuStDetector::Detect slide win   " << t1-t0 << std::endl;
   std::vector<std::vector<seeta::FaceInfo> > proposals_nms(hierarchy_size_[0]);
   for (int32_t i = 0; i < hierarchy_size_[0]; i++) {
     seeta::fd::NonMaximumSuppression(&(proposals[i]),
       &(proposals_nms[i]), 0.8f);
     proposals[i].clear();
   }
-
+  t0 = clock();
+  std::cout << "FuStDetector::Detect proposals_nms   " << t0-t1 << std::endl;
   // Following classifiers
 
   seeta::ImageData img = img_pyramid->image1x();
   seeta::Rect roi;
-  std::vector<float> mlp_predicts(4);  // @todo no hard-coded number!
+  float mlp_predicts[4];  // @todo no hard-coded number!
   roi.x = roi.y = 0;
   roi.width = roi.height = wnd_size_;
 
@@ -211,7 +215,7 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
           feat_map->Compute(wnd_data_.data(), wnd_size_, wnd_size_);
           feat_map->SetROI(roi);
 					//loops for score
-          if (model_[model_idx]->Classify(&score, mlp_predicts.data())) {
+          if (model_[model_idx]->Classify(&score, mlp_predicts)) {
             float x = static_cast<float>(bboxes[m].bbox.x);
             float y = static_cast<float>(bboxes[m].bbox.y);
             float w = static_cast<float>(bboxes[m].bbox.width);
@@ -252,6 +256,8 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
     for (int32_t j = 0; j < hierarchy_size_[i]; j++)
       proposals_nms[j] = proposals[buf_idx[j]];
   }
+  t1 = clock();
+  std::cout << "FuStDetector::Detect classifier   " << t1-t0 << std::endl;
 
   return proposals_nms[0];
 }

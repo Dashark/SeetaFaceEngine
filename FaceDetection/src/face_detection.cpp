@@ -78,7 +78,7 @@ FaceDetection::~FaceDetection() {
   if (impl_ != nullptr)
     delete impl_;
 }
-	//@todo it's main procedure.
+
 std::vector<seeta::FaceInfo> FaceDetection::Detect(
     const seeta::ImageData & img) {
   if (!impl_->IsLegalImage(img))

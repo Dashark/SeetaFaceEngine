@@ -99,7 +99,7 @@ class LABBoostedClassifier : public Classifier {
 
  private:
   static const int32_t kFeatGroupSize = 10;
-  const float kStdDevThresh = 10.0f;
+  const fixed_t kStdDevThresh = 10;
 
   std::vector<seeta::fd::LABFeature> feat_;
   std::vector<std::shared_ptr<seeta::fd::LABBaseClassifier> > base_classifiers_;

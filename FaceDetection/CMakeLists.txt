@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.1.0)
 project(seeta_facedet_lib)
 
 # Build options
-option(BUILD_EXAMPLES  "Set to ON to build examples"  OFF)
+option(BUILD_EXAMPLES  "Set to ON to build examples"  ON)
 option(USE_OPENMP      "Set to ON to build use openmp"  OFF)
 option(USE_SSE         "Set to ON to build use SSE"  OFF)
 
@@ -55,8 +55,8 @@ set(src_files
 # set(facedet_required_libs seeta_facedet_lib)
 # Build static library
 add_library(seeta_facedet_lib_static STATIC ${src_files})
-include_directories(/home/axis/Downloads/fixmath-1.4/include)
-target_link_libraries(seeta_facedet_lib_static /home/axis/Downloads/fixmath-1.4/src/.libs/libfixmath.a)
+include_directories(/home/bioiris/Downloads/fixmath-1.4/include)
+target_link_libraries(seeta_facedet_lib_static /usr/local/lib/libfixmath.a)
 set(facedet_required_libs seeta_facedet_lib_static)
 
 # Build examples

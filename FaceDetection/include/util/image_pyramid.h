@@ -141,7 +141,7 @@ class ImagePyramid {
     return img;
   }
 
-  const seeta::ImageData* GetNextScaleImage(float* scale_factor = nullptr);
+  const seeta::ImageData* GetNextScaleImage(int32_t* scale_factor = nullptr);
 
  private:
   void UpdateBufScaled();

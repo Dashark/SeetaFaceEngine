@@ -483,15 +483,15 @@ void SURFFeatureMap::ComputeFeatureVector(const SURFFeature & feat,
 
 void SURFFeatureMap::NormalizeFeatureVectorL2(const int32_t* feat_vec,
     float* feat_vec_normed, int32_t len) const {
-  double prod = 0.0;
-  float norm_l2 = 0.0f;
+  fixed_t prod = 0;
+  fixed_t norm_l2 = 0;
 
   for (int32_t i = 0; i < len; i++)
-    prod += static_cast<double>(feat_vec[i] * feat_vec[i]);
+    prod += fx_mulx(feat_vec[i], feat_vec[i], 16);
   if (prod != 0) {
-    norm_l2 = static_cast<float>(std::sqrt(prod));
+	  norm_l2 = fx_sqrtx(prod, 16);
     for (int32_t i = 0; i < len; i++)
-      feat_vec_normed[i] = feat_vec[i] / norm_l2;
+		feat_vec_normed[i] =  fx_xtof(fx_divx(feat_vec[i], norm_l2, 16), 16);
   } else {
     for (int32_t i = 0; i < len; i++)
       feat_vec_normed[i] = 0.0f;

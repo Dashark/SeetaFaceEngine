@@ -34,6 +34,8 @@
 
 #include "common.h"
 #include "feature_map.h"
+#include <fixmath.h>
+#define FIXMATH_FRAC_BITS 16
 
 namespace seeta {
 namespace fd {

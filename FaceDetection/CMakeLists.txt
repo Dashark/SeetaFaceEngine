@@ -55,8 +55,7 @@ set(src_files
 # set(facedet_required_libs seeta_facedet_lib)
 # Build static library
 add_library(seeta_facedet_lib_static STATIC ${src_files})
-include_directories(/home/bioiris/Downloads/fixmath-1.4/include)
-target_link_libraries(seeta_facedet_lib_static /usr/local/lib/libfixmath.a)
+target_link_libraries(seeta_facedet_lib_static fixmath)
 set(facedet_required_libs seeta_facedet_lib_static)
 
 # Build examples

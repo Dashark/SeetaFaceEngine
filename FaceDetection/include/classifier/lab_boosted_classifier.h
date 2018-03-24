@@ -50,27 +50,27 @@ namespace fd {
 class LABBaseClassifier {
  public:
   LABBaseClassifier()
-    : num_bin_(255), thresh_(0.0f) {
-	  weights_ = new float[num_bin_];
+    : num_bin_(255), thresh_(fx_itox(0, FIXMATH_FRAC_BITS)) {
+	  weights_ = new fixed_t[num_bin_];
   }
 
   ~LABBaseClassifier() {
 	  delete weights_;
   }
 
-  void SetWeights(const float* weights, int32_t num_bin);
+  void SetWeights(const fixed_t* weights, int32_t num_bin);
 
-  inline void SetThreshold(float thresh) { thresh_ = thresh; }
+  inline void SetThreshold(fixed_t thresh) { thresh_ = thresh; }
 
   inline int32_t num_bin() const { return num_bin_; }
-  inline float weights(int32_t val) const { return weights_[val]; }
-  inline float threshold() const { return thresh_; }
+  inline fixed_t weights(int32_t val) const { return weights_[val]; }
+  inline fixed_t threshold() const { return thresh_; }
 
  private:
   int32_t num_bin_;
 
-  float* weights_;
-  float thresh_;
+  fixed_t* weights_;
+  fixed_t thresh_;
 };
 
 /**
@@ -89,7 +89,7 @@ class LABBoostedClassifier : public Classifier {
   }
 
   void AddFeature(int32_t x, int32_t y);
-  void AddBaseClassifier(const float* weights, int32_t num_bin, float thresh);
+  void AddBaseClassifier(const fixed_t* weights, int32_t num_bin, fixed_t thresh);
 
   inline virtual void SetFeatureMap(seeta::fd::FeatureMap* featMap) {
     feat_map_ = dynamic_cast<seeta::fd::LABFeatureMap*>(featMap);

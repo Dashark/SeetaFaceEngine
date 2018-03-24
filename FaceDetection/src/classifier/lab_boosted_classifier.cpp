@@ -38,11 +38,11 @@
 namespace seeta {
 namespace fd {
 
-void LABBaseClassifier::SetWeights(const float* weights, int32_t num_bin) {
+void LABBaseClassifier::SetWeights(const fixed_t* weights, int32_t num_bin) {
 	if (weights_ != nullptr)
 		delete weights_;
-	weights_ = new float[num_bin + 1];
-  std::memcpy(weights_,  weights, sizeof(float)*(num_bin + 1));
+	weights_ = new fixed_t[num_bin + 1];
+	std::memcpy(weights_, weights, sizeof(fixed_t)*(num_bin + 1));
   num_bin_ = num_bin;
   //std::copy(weights, weights + num_bin_ + 1, weights_);
 }
@@ -95,8 +95,8 @@ void LABBoostedClassifier::AddFeature(int32_t x, int32_t y) {
   feat_.push_back(feat);
 }
 
-void LABBoostedClassifier::AddBaseClassifier(const float* weights,
-    int32_t num_bin, float thresh) {
+void LABBoostedClassifier::AddBaseClassifier(const fixed_t* weights,
+	int32_t num_bin, fixed_t thresh) {
   std::shared_ptr<LABBaseClassifier> classifier(new LABBaseClassifier());
   classifier->SetWeights(weights, num_bin);
   classifier->SetThreshold(thresh);

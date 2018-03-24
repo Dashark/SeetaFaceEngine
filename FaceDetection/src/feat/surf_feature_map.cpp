@@ -115,7 +115,7 @@ void SURFFeatureMap::Compute(const uint8_t* input, int32_t width,
   ComputeIntegralImages();
 }
 
-void SURFFeatureMap::GetFeatureVector(int32_t feat_id, float* feat_vec) {
+void SURFFeatureMap::GetFeatureVector(int32_t feat_id, fixed_t* feat_vec) {
   if (buf_valid_[feat_id] == 0) {
     ComputeFeatureVector(feat_pool_[feat_id], feat_vec_buf_[feat_id].data());
     NormalizeFeatureVectorL2(feat_vec_buf_[feat_id].data(),
@@ -126,7 +126,7 @@ void SURFFeatureMap::GetFeatureVector(int32_t feat_id, float* feat_vec) {
   }
 
   std::memcpy(feat_vec, feat_vec_normed_buf_[feat_id].data(),
-    feat_vec_normed_buf_[feat_id].size() * sizeof(float));
+	  feat_vec_normed_buf_[feat_id].size() * sizeof(fixed_t));
 }
 
 void SURFFeatureMap::InitFeaturePool() {
@@ -482,7 +482,7 @@ void SURFFeatureMap::ComputeFeatureVector(const SURFFeature & feat,
 }
 
 void SURFFeatureMap::NormalizeFeatureVectorL2(const int32_t* feat_vec,
-    float* feat_vec_normed, int32_t len) const {
+	fixed_t* feat_vec_normed, int32_t len) const {
   fixed_t prod = 0;
   fixed_t norm_l2 = 0;
 
@@ -491,10 +491,10 @@ void SURFFeatureMap::NormalizeFeatureVectorL2(const int32_t* feat_vec,
   if (prod != 0) {
 	  norm_l2 = fx_sqrtx(prod, 16);
     for (int32_t i = 0; i < len; i++)
-		feat_vec_normed[i] =  fx_xtof(fx_divx(feat_vec[i], norm_l2, 16), 16);
+		feat_vec_normed[i] =  fx_divx(feat_vec[i], norm_l2, 16);
   } else {
     for (int32_t i = 0; i < len; i++)
-      feat_vec_normed[i] = 0.0f;
+      feat_vec_normed[i] = fx_itox(0, FIXMATH_FRAC_BITS);
   }
 }
 

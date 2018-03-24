@@ -124,7 +124,7 @@ class SURFFeatureMap : public FeatureMap {
       feat_pool_[feat_id].num_cell_per_row * kNumIntChannel);
   }
 
-  void GetFeatureVector(int32_t featID, float* featVec);
+  void GetFeatureVector(int32_t featID, fixed_t* featVec);
 
  private:
   void InitFeaturePool();
@@ -149,7 +149,7 @@ class SURFFeatureMap : public FeatureMap {
   }
 
   void ComputeFeatureVector(const SURFFeature & feat, int32_t* feat_vec);
-  void NormalizeFeatureVectorL2(const int32_t* feat_vec, float* feat_vec_normed,
+  void NormalizeFeatureVectorL2(const int32_t* feat_vec, fixed_t* feat_vec_normed,
     int32_t len) const;
 
   /**
@@ -166,7 +166,7 @@ class SURFFeatureMap : public FeatureMap {
   std::vector<int32_t> int_img_;
   std::vector<int32_t> img_buf_;
   std::vector<std::vector<int32_t> > feat_vec_buf_;
-  std::vector<std::vector<float> > feat_vec_normed_buf_;
+  std::vector<std::vector<fixed_t> > feat_vec_normed_buf_;
   std::vector<int32_t> buf_valid_;
 
   seeta::fd::SURFFeaturePool feat_pool_;

@@ -58,10 +58,10 @@ class SURFMLP : public Classifier {
   }
 
   void AddFeatureByID(int32_t feat_id);
-  void AddLayer(int32_t input_dim, int32_t output_dim, const float* weights,
-    const float* bias, bool is_output = false);
+  void AddLayer(int32_t input_dim, int32_t output_dim, const fixed_t* weights,
+	  const fixed_t* bias, bool is_output = false);
 
-  inline void SetThreshold(float thresh) { thresh_ = thresh; }
+  inline void SetThreshold(fixed_t thresh) { thresh_ = thresh; }
 
  private:
   std::vector<int32_t> feat_id_;
@@ -69,7 +69,7 @@ class SURFMLP : public Classifier {
   std::vector<float> output_buf_;
 
   std::shared_ptr<seeta::fd::MLP> model_;
-  float thresh_;
+  fixed_t thresh_;
   seeta::fd::SURFFeatureMap* feat_map_;
 };
 

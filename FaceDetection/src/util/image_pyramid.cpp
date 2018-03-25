@@ -31,23 +31,32 @@
 
 #include "util/image_pyramid.h"
 
+#include<stdio.h>
+
 namespace seeta {
 namespace fd {
 
-	const seeta::ImageData* ImagePyramid::GetNextScaleImage(int32_t* scale_factor) {
+const seeta::ImageData* ImagePyramid::GetNextScaleImage(fixed_t* scale_factor) {
   if (scale_factor_ >= min_scale_) {
     if (scale_factor != nullptr)
-      *scale_factor = scale_factor_*1000000;
+      *scale_factor = scale_factor_;
 
-    width_scaled_ = static_cast<int32_t>(width1x_ * scale_factor_);
-    height_scaled_ = static_cast<int32_t>(height1x_ * scale_factor_);
+
+    //width_scaled_ = static_cast<int32_t>(width1x_ * scale_factor_);
+    //height_scaled_ = static_cast<int32_t>(height1x_ * scale_factor_);
+	fixed_t width_scaled_fx = fx_mulx(fx_itox(width1x_, FIXMATH_FRAC_BITS), scale_factor_, FIXMATH_FRAC_BITS);
+	fixed_t height_scaled_fx = fx_mulx(fx_itox(height1x_, FIXMATH_FRAC_BITS), scale_factor_, FIXMATH_FRAC_BITS);
+	width_scaled_ = fx_xtoi(width_scaled_fx, FIXMATH_FRAC_BITS);
+	height_scaled_ = fx_xtoi(height_scaled_fx, FIXMATH_FRAC_BITS);
 
     seeta::ImageData src_img(width1x_, height1x_);
     seeta::ImageData dest_img(width_scaled_, height_scaled_);
     src_img.data = buf_img_;
     dest_img.data = buf_img_scaled_;
     seeta::fd::ResizeImage(src_img, &dest_img);
-    scale_factor_ *= scale_step_;
+
+	//scale_factor_ *= scale_step_;
+	scale_factor_ = fx_mulx(scale_factor_, scale_step_, FIXMATH_FRAC_BITS);
 
     img_scaled_.data = buf_img_scaled_;
     img_scaled_.width = width_scaled_;
@@ -79,8 +88,14 @@ void ImagePyramid::UpdateBufScaled() {
   if (width1x_ == 0 || height1x_ == 0)
     return;
 
-  int32_t max_width = static_cast<int32_t>(width1x_ * max_scale_ + 0.5);
-  int32_t max_height = static_cast<int32_t>(height1x_ * max_scale_ + 0.5);
+  //int32_t max_width = static_cast<int32_t>(width1x_ * max_scale_ + 0.5);
+  //int32_t max_height = static_cast<int32_t>(height1x_ * max_scale_ + 0.5);
+
+  fixed_t max_width_fx = fx_mulx(fx_itox(width1x_, FIXMATH_FRAC_BITS), max_scale_, FIXMATH_FRAC_BITS) + fx_divx(fx_itox(5, FIXMATH_FRAC_BITS), fx_itox(10, FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS);
+  fixed_t max_height_fx = fx_mulx(fx_itox(height1x_, FIXMATH_FRAC_BITS), max_scale_, FIXMATH_FRAC_BITS) + fx_divx(fx_itox(5, FIXMATH_FRAC_BITS), fx_itox(10, FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS);
+
+  int32_t max_width = fx_xtoi(max_width_fx, FIXMATH_FRAC_BITS);
+  int32_t max_height = fx_xtoi(max_height_fx, FIXMATH_FRAC_BITS);
 
   if (max_width > buf_scaled_width_ || max_height > buf_scaled_height_) {
     delete[] buf_img_scaled_;

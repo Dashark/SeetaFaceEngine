@@ -47,7 +47,7 @@ class SURFMLP : public Classifier {
   SURFMLP() : Classifier(), model_(new seeta::fd::MLP()) {}
   virtual ~SURFMLP() {}
 
-  virtual bool Classify(float* score = nullptr, float* outputs = nullptr);
+  virtual bool Classify(fixed_t* score = nullptr, fixed_t* outputs = nullptr);
 
   inline virtual void SetFeatureMap(seeta::fd::FeatureMap* feat_map) {
     feat_map_ = dynamic_cast<seeta::fd::SURFFeatureMap*>(feat_map);
@@ -65,8 +65,8 @@ class SURFMLP : public Classifier {
 
  private:
   std::vector<int32_t> feat_id_;
-  std::vector<float> input_buf_;
-  std::vector<float> output_buf_;
+  std::vector<fixed_t> input_buf_;
+  std::vector<fixed_t> output_buf_;
 
   std::shared_ptr<seeta::fd::MLP> model_;
   fixed_t thresh_;

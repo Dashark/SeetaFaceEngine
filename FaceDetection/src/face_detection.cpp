@@ -38,6 +38,8 @@
 #include "fust.h"
 #include "util/image_pyramid.h"
 
+#include<stdio.h>
+
 namespace seeta {
 
 class FaceDetection::Impl {
@@ -90,7 +92,8 @@ std::vector<seeta::FaceInfo> FaceDetection::Detect(
     min_img_size);
 
   impl_->img_pyramid_.SetImage1x(img.data, img.width, img.height);
-  impl_->img_pyramid_.SetMinScale(static_cast<float>(impl_->kWndSize) / min_img_size);
+  float minScale = static_cast<float>(impl_->kWndSize) / min_img_size;
+  impl_->img_pyramid_.SetMinScale(fx_ftox(minScale, FIXMATH_FRAC_BITS));
 
   impl_->detector_->SetWindowSize(impl_->kWndSize);
   impl_->detector_->SetSlideWindowStep(impl_->slide_wnd_step_x_,
@@ -111,7 +114,13 @@ std::vector<seeta::FaceInfo> FaceDetection::Detect(
 void FaceDetection::SetMinFaceSize(int32_t size) {
   if (size >= 20) {
     impl_->min_face_size_ = size;
-    impl_->img_pyramid_.SetMaxScale(impl_->kWndSize / static_cast<float>(size));
+	//转换开始
+	printf("face_detection1");
+	float maxScale = impl_->kWndSize / static_cast<float>(size);
+	printf("face_detection2");
+	//转换结束
+	impl_->img_pyramid_.SetMaxScale(fx_ftox(maxScale, FIXMATH_FRAC_BITS));
+	printf("face_detection3");
   }
 }
 
@@ -121,8 +130,12 @@ void FaceDetection::SetMaxFaceSize(int32_t size) {
 }
 
 void FaceDetection::SetImagePyramidScaleFactor(float factor) {
-  if (factor >= 0.01f && factor <= 0.99f)
-    impl_->img_pyramid_.SetScaleStep(static_cast<float>(factor));
+	if (factor >= 0.01f && factor <= 0.99f){
+		//开始转换
+		fixed_t factor_fx = fx_ftox(factor, FIXMATH_FRAC_BITS);
+		//结束转换
+		impl_->img_pyramid_.SetScaleStep(factor_fx);
+	}
 }
 
 void FaceDetection::SetWindowStep(int32_t step_x, int32_t step_y) {

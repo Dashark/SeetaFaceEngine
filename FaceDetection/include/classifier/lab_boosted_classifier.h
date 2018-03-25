@@ -82,7 +82,7 @@ class LABBoostedClassifier : public Classifier {
   LABBoostedClassifier() : use_std_dev_(true) {}
   virtual ~LABBoostedClassifier() {}
 
-  virtual bool Classify(float* score = nullptr, float* outputs = nullptr);
+  virtual bool Classify(fixed_t* score = nullptr, fixed_t* outputs = nullptr);
 
   inline virtual seeta::fd::ClassifierType type() {
     return seeta::fd::ClassifierType::LAB_Boosted_Classifier;
@@ -99,7 +99,7 @@ class LABBoostedClassifier : public Classifier {
 
  private:
   static const int32_t kFeatGroupSize = 10;
-  const fixed_t kStdDevThresh = 10;
+  const fixed_t kStdDevThresh = fx_itox(10, FIXMATH_FRAC_BITS);
 
   std::vector<seeta::fd::LABFeature> feat_;
   std::vector<std::shared_ptr<seeta::fd::LABBaseClassifier> > base_classifiers_;

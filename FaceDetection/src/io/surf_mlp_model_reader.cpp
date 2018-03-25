@@ -64,7 +64,11 @@ bool SURFMLPModelReader::Read(std::istream* input,
     surf_mlp->AddFeatureByID(feat_id_buf_[i]);
 
   input->read(reinterpret_cast<char*>(&thresh), sizeof(float));
-  surf_mlp->SetThreshold(thresh);
+  //开始转换
+  fixed_t thresh_fx = fx_ftox(thresh, FIXMATH_FRAC_BITS);
+  //结束转换
+
+  surf_mlp->SetThreshold(thresh_fx);
   input->read(reinterpret_cast<char*>(&input_dim), sizeof(int32_t));
   if (input_dim <= 0) {
     is_read = false;
@@ -85,12 +89,25 @@ bool SURFMLPModelReader::Read(std::istream* input,
     input->read(reinterpret_cast<char*>(bias_buf_.data()),
       sizeof(float) * output_dim);
 
+	//开始转换
+	std::vector<fixed_t> weights_buf_fx;
+	std::vector<fixed_t> bias_buf_fx;
+	weights_buf_fx.resize(len);
+	bias_buf_fx.resize(output_dim);
+	for (int32_t a = 0; a < len; a++){
+		weights_buf_fx[a] = fx_ftox(weights_buf_[a], FIXMATH_FRAC_BITS);
+	}
+	for (int32_t a = 0; a < output_dim; a++){
+		bias_buf_fx[a] = fx_ftox(bias_buf_[a], FIXMATH_FRAC_BITS);
+	}
+	//结束转换
+
     if (i < num_layer - 1) {
-      surf_mlp->AddLayer(input_dim, output_dim, weights_buf_.data(),
-        bias_buf_.data());
+		surf_mlp->AddLayer(input_dim, output_dim, weights_buf_fx.data(),
+			bias_buf_fx.data());
     } else {
-      surf_mlp->AddLayer(input_dim, output_dim, weights_buf_.data(),
-        bias_buf_.data(), true);
+		surf_mlp->AddLayer(input_dim, output_dim, weights_buf_fx.data(),
+			bias_buf_fx.data(), true);
     }
     input_dim = output_dim;
   }

@@ -74,12 +74,26 @@ bool LABBoostModelReader::ReadBaseClassifierParam(std::istream* input,
   input->read(reinterpret_cast<char*>(classifier_buffer_),
     sizeof(float)* num_base_classifer_);
 
+  //开始转换
+  fixed_t* classifier_buffer_fx = new fixed_t[num_base_classifer_];
+  for (int32_t a; a < num_base_classifer_; a++){
+	  classifier_buffer_fx[a] = fx_ftox(classifier_buffer_[a], FIXMATH_FRAC_BITS);
+  }
+  //结束转换
+
+
   int32_t weight_len = sizeof(float)* (num_bin_ + 1);
   //std::vector<float> weights;
   //weights.resize(num_bin_ + 1);
   for (int32_t i = 0; i < num_base_classifer_; i++) {
     input->read(reinterpret_cast<char*>(bin_buffer_), weight_len);
-    model->AddBaseClassifier(bin_buffer_, num_bin_, classifier_buffer_[i]);
+	//开始转换
+	fixed_t* bin_buffer_fx = new fixed_t[num_bin_ + 1];
+	for (int32_t a; a < num_bin_ + 1; a++){
+		bin_buffer_fx[a] = fx_ftox(bin_buffer_[a], FIXMATH_FRAC_BITS);
+	}
+	//结束转换
+	model->AddBaseClassifier(bin_buffer_fx, num_bin_, classifier_buffer_fx[i]);
   }
 
   return !input->fail();

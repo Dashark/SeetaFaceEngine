@@ -36,7 +36,7 @@
 namespace seeta {
 namespace fd {
 
-void MLPLayer::Compute(const float* input, float* output) {
+	void MLPLayer::Compute(const fixed_t* input, fixed_t* output) {
 #pragma omp parallel num_threads(SEETA_NUM_THREADS)
   {
 #pragma omp for nowait
@@ -48,7 +48,7 @@ void MLPLayer::Compute(const float* input, float* output) {
   }
 }
 
-void MLP::Compute(const float* input, float* output) {
+	void MLP::Compute(const fixed_t* input, fixed_t* output) {
   layer_buf_[0].resize(layers_[0]->GetOutputDim());
   layers_[0]->Compute(input, layer_buf_[0].data());
 
@@ -60,8 +60,8 @@ void MLP::Compute(const float* input, float* output) {
   layers_.back()->Compute(layer_buf_[(i + 1) % 2].data(), output);
 }
 
-void MLP::AddLayer(int32_t inputDim, int32_t outputDim, const float* weights,
-    const float* bias, bool is_output) {
+	void MLP::AddLayer(int32_t inputDim, int32_t outputDim, const fixed_t* weights,
+		const fixed_t* bias, bool is_output) {
   if (layers_.size() > 0 && inputDim != layers_.back()->GetOutputDim())
     return;  // @todo handle the errors!!!
 

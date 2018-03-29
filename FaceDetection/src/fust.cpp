@@ -200,7 +200,7 @@ clock_t t0 = clock();
 
   seeta::ImageData img = img_pyramid->image1x();
   seeta::Rect roi;
-  std::vector<float> mlp_predicts(4);  // @todo no hard-coded number!
+  float mlp_predicts[4];  // @todo no hard-coded number!
   roi.x = roi.y = 0;
   roi.width = roi.height = wnd_size_;
 
@@ -237,12 +237,12 @@ clock_t t0 = clock();
 					//loops for score
 		  //开始转换
 		  fixed_t score_fx = fx_ftox(score, FIXMATH_FRAC_BITS);
-		  std::vector<fixed_t> mlp_predicts_fx(4);
+		  fixed_t mlp_predicts_fx[4];
 		  for (int32_t a = 0; a < 4; a++){
 			  mlp_predicts_fx[a] = fx_ftox(mlp_predicts[a], FIXMATH_FRAC_BITS);
 		  }
 		  //结束转换
-		  if (model_[model_idx]->Classify(&score_fx, mlp_predicts_fx.data())) {
+		  if (model_[model_idx]->Classify(&score_fx, mlp_predicts_fx)) {
 			  //开始转换
 			  for (int32_t a = 0; a < 4; a++){
 				  mlp_predicts[a] = fx_xtof(mlp_predicts_fx[a], FIXMATH_FRAC_BITS);

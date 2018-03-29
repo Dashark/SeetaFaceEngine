@@ -44,7 +44,7 @@ bool CompareBBox(const seeta::FaceInfo & a, const seeta::FaceInfo & b) {
 
 //计算交并比，合并重复的脸框
 void NonMaximumSuppression(std::vector<seeta::FaceInfo>* bboxes,
-  std::vector<seeta::FaceInfo>* bboxes_nms, float iou_thresh) {
+  std::vector<seeta::FaceInfo>* bboxes_nms, int32_t iou_thresh) {
   bboxes_nms->clear();
   std::sort(bboxes->begin(), bboxes->end(), seeta::fd::CompareBBox);
 
@@ -65,11 +65,11 @@ void NonMaximumSuppression(std::vector<seeta::FaceInfo>* bboxes,
     mask_merged[select_idx] = 1;
 
     seeta::Rect select_bbox = (*bboxes)[select_idx].bbox;
-    float area1 = static_cast<float>(select_bbox.width * select_bbox.height);
-    float x1 = static_cast<float>(select_bbox.x);
-    float y1 = static_cast<float>(select_bbox.y);
-    float x2 = static_cast<float>(select_bbox.x + select_bbox.width - 1);
-    float y2 = static_cast<float>(select_bbox.y + select_bbox.height - 1);
+	int32_t area1 = select_bbox.width * select_bbox.height;
+	int32_t x1 = select_bbox.x;
+	int32_t y1 = select_bbox.y;
+	int32_t x2 = select_bbox.x + select_bbox.width - 1;
+	int32_t y2 = select_bbox.y + select_bbox.height - 1;
 
     select_idx++;
     for (int32_t i = select_idx; i < num_bbox; i++) {
@@ -77,17 +77,18 @@ void NonMaximumSuppression(std::vector<seeta::FaceInfo>* bboxes,
         continue;
 
       seeta::Rect & bbox_i = (*bboxes)[i].bbox;
-      float x = std::max<float>(x1, static_cast<float>(bbox_i.x));
-      float y = std::max<float>(y1, static_cast<float>(bbox_i.y));
-      float w = std::min<float>(x2, static_cast<float>(bbox_i.x + bbox_i.width - 1)) - x + 1;
-      float h = std::min<float>(y2, static_cast<float>(bbox_i.y + bbox_i.height - 1)) - y + 1;
+	  int32_t x = std::max<int32_t>(x1, bbox_i.x);
+	  int32_t y = std::max<int32_t>(y1, bbox_i.y);
+	  int32_t w = std::min<int32_t>(x2, bbox_i.x + bbox_i.width - 1) - x + 1;
+	  int32_t h = std::min<int32_t>(y2, bbox_i.y + bbox_i.height - 1) - y + 1;
       if (w <= 0 || h <= 0)
         continue;
 
-      float area2 = static_cast<float>(bbox_i.width * bbox_i.height);
-      float area_intersect = w * h;
-      float area_union = area1 + area2 - area_intersect;
-      if (static_cast<float>(area_intersect) / area_union > iou_thresh) {
+	  int32_t area2 = bbox_i.width * bbox_i.height;
+	  int32_t area_intersect = w * h;
+	  int32_t area_union = area1 + area2 - area_intersect;
+	  //if (fx_divx(fx_itox(area_intersect, FIXMATH_FRAC_BITS), fx_itox(area_union, FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS) > iou_thresh){
+    if (area_intersect>area_union *  iou_thresh/100) {
         mask_merged[i] = 1;
         bboxes_nms->back().score += (*bboxes)[i].score;
       }

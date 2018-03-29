@@ -35,7 +35,7 @@ if (USE_OPENMP)
 endif()
 
 include_directories(include)
-
+include_directories(/usr/local/include)
 set(src_files 
     src/util/nms.cpp
     src/util/image_pyramid.cpp
@@ -55,7 +55,8 @@ set(src_files
 # set(facedet_required_libs seeta_facedet_lib)
 # Build static library
 add_library(seeta_facedet_lib_static STATIC ${src_files})
-target_link_libraries(seeta_facedet_lib_static /usr/local/lib/libfixmath.a)
+#target_link_libraries(seeta_facedet_lib_static /usr/local/lib/libfixmath.a)
+target_link_libraries(seeta_facedet_lib_static fixmath)
 set(facedet_required_libs seeta_facedet_lib_static)
 
 # Build examples

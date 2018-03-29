@@ -31,6 +31,8 @@
 
 #include "fust.h"
 
+#include <iostream>
+#include <time.h>
 #include <map>
 #include <memory>
 #include <string>
@@ -138,7 +140,7 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
   std::vector<std::vector<seeta::FaceInfo> > proposals(hierarchy_size_[0]);
   std::shared_ptr<seeta::fd::FeatureMap> & feat_map_1 =
     feat_map_[cls2feat_idx_[model_[0]->type()]];
-
+clock_t t0 = clock();
   while (img_scaled != nullptr) {
     feat_map_1->Compute(img_scaled->data, img_scaled->width,
       img_scaled->height);
@@ -180,6 +182,8 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
 	scale_factor = fx_xtof(scale_factor_fx, FIXMATH_FRAC_BITS);
 	//½áÊø×ª»»
   }
+  clock_t t1 = clock();
+  std::cout << "FuStDetector::Detect slide win   " << t1-t0 << std::endl;
 
   int32_t iou_thresh8 = 80; //fx_ftox(0.8f, FIXMATH_FRAC_BITS); //fx_divx(fx_itox(8, FIXMATH_FRAC_BITS), fx_itox(10, FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS);
   int32_t iou_thresh3 = 30; //fx_ftox(0.3f, FIXMATH_FRAC_BITS); //fx_divx(fx_itox(3, FIXMATH_FRAC_BITS), fx_itox(10, FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS);
@@ -190,7 +194,8 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
 		&(proposals_nms[i]), iou_thresh8);
     proposals[i].clear();
   }
-
+  t0 = clock();
+  std::cout << "FuStDetector::Detect proposals_nms   " << t0-t1 << std::endl;
   // Following classifiers
 
   seeta::ImageData img = img_pyramid->image1x();
@@ -286,7 +291,9 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
     for (int32_t j = 0; j < hierarchy_size_[i]; j++)
       proposals_nms[j] = proposals[buf_idx[j]];
   }
-
+  t1 = clock();
+  std::cout << "FuStDetector::Detect classifier   " << t1-t0 << std::endl;
+ 
   return proposals_nms[0];
 }
 

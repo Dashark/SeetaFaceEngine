@@ -31,8 +31,6 @@
 
 #include "fust.h"
 
-#include <iostream>
-#include <time.h>
 #include <map>
 #include <memory>
 #include <string>
@@ -45,7 +43,6 @@
 #include "io/lab_boost_model_reader.h"
 #include "io/surf_mlp_model_reader.h"
 #include "util/nms.h"
-
 
 namespace seeta {
 namespace fd {
@@ -119,20 +116,21 @@ bool FuStDetector::LoadModel(const std::string & model_path) {
 
   return is_loaded;
 }
+
 std::vector<seeta::FaceInfo> FuStDetector::Detect(
     seeta::fd::ImagePyramid* img_pyramid) {
   float score;
   seeta::FaceInfo wnd_info;
   seeta::Rect wnd;
   float scale_factor = 0.0;
-  //ï¿½ï¿½Ê¼×ªï¿½ï¿½
+  //¿ªÊ¼×ª»»
   fixed_t scale_factor_fx = fx_ftox(scale_factor, FIXMATH_FRAC_BITS);
-  //ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½
+  //½áÊø×ª»»
   const seeta::ImageData* img_scaled =
 	  img_pyramid->GetNextScaleImage(&scale_factor_fx);
-  //ï¿½ï¿½Ê¼×ªï¿½ï¿½
+  //¿ªÊ¼×ª»»
   scale_factor = fx_xtof(scale_factor_fx, FIXMATH_FRAC_BITS);
-  //ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½
+  //½áÊø×ª»»
   wnd.height = wnd.width = wnd_size_;
 
   // Sliding window
@@ -140,7 +138,7 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
   std::vector<std::vector<seeta::FaceInfo> > proposals(hierarchy_size_[0]);
   std::shared_ptr<seeta::fd::FeatureMap> & feat_map_1 =
     feat_map_[cls2feat_idx_[model_[0]->type()]];
-  clock_t t0 = clock();
+
   while (img_scaled != nullptr) {
     feat_map_1->Compute(img_scaled->data, img_scaled->width,
       img_scaled->height);
@@ -161,49 +159,43 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
 
         for (int32_t i = 0; i < hierarchy_size_[0]; i++) {
 					//four times loops for score
-		 //ï¿½ï¿½Ê¼×ªï¿½ï¿½
+		 //¿ªÊ¼×ª»»
 			fixed_t score_fx = fx_ftox(score, FIXMATH_FRAC_BITS);
-		 //ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½
+		 //½áÊø×ª»»
 			if (model_[i]->Classify(&score_fx)) {
-				//ï¿½ï¿½Ê¼×ªï¿½ï¿½
+				//¿ªÊ¼×ª»»
 				score = fx_xtof(score_fx, FIXMATH_FRAC_BITS);
-				//ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½
+				//½áÊø×ª»»
             wnd_info.score = static_cast<double>(score);
             proposals[i].push_back(wnd_info);
           }
         }
       }
     }
-	//ï¿½ï¿½Ê¼×ªï¿½ï¿½
+	//¿ªÊ¼×ª»»
 	scale_factor_fx = fx_ftox(scale_factor, FIXMATH_FRAC_BITS);
-	//ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½
+	//½áÊø×ª»»
 	img_scaled = img_pyramid->GetNextScaleImage(&scale_factor_fx);
-	//ï¿½ï¿½Ê¼×ªï¿½ï¿½
+	//¿ªÊ¼×ª»»
 	scale_factor = fx_xtof(scale_factor_fx, FIXMATH_FRAC_BITS);
-	//ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½
+	//½áÊø×ª»»
   }
-<<<<<<< HEAD
 
   fixed_t iou_thresh8 = fx_divx(fx_itox(8, FIXMATH_FRAC_BITS), fx_itox(10, FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS);
   fixed_t iou_thresh3 = fx_divx(fx_itox(3, FIXMATH_FRAC_BITS), fx_itox(10, FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS);
   
-=======
-  clock_t t1 = clock();
-  std::cout << "FuStDetector::Detect slide win   " << t1-t0 << std::endl;
->>>>>>> ba1d4653ec3c164a2ed8fb89b2ac9f88c08f94b3
   std::vector<std::vector<seeta::FaceInfo> > proposals_nms(hierarchy_size_[0]);
   for (int32_t i = 0; i < hierarchy_size_[0]; i++) {
     seeta::fd::NonMaximumSuppression(&(proposals[i]),
 		&(proposals_nms[i]), iou_thresh8);
     proposals[i].clear();
   }
-  t0 = clock();
-  std::cout << "FuStDetector::Detect proposals_nms   " << t0-t1 << std::endl;
+
   // Following classifiers
 
   seeta::ImageData img = img_pyramid->image1x();
   seeta::Rect roi;
-  float mlp_predicts[4];  // @todo no hard-coded number!
+  std::vector<float> mlp_predicts(4);  // @todo no hard-coded number!
   roi.x = roi.y = 0;
   roi.width = roi.height = wnd_size_;
 
@@ -238,19 +230,19 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
           feat_map->Compute(wnd_data_.data(), wnd_size_, wnd_size_);
           feat_map->SetROI(roi);
 					//loops for score
-		  //ï¿½ï¿½Ê¼×ªï¿½ï¿½
+		  //¿ªÊ¼×ª»»
 		  fixed_t score_fx = fx_ftox(score, FIXMATH_FRAC_BITS);
 		  std::vector<fixed_t> mlp_predicts_fx(4);
 		  for (int32_t a = 0; a < 4; a++){
 			  mlp_predicts_fx[a] = fx_ftox(mlp_predicts[a], FIXMATH_FRAC_BITS);
 		  }
-		  //ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½
+		  //½áÊø×ª»»
 		  if (model_[model_idx]->Classify(&score_fx, mlp_predicts_fx.data())) {
-			  //ï¿½ï¿½Ê¼×ªï¿½ï¿½
+			  //¿ªÊ¼×ª»»
 			  for (int32_t a = 0; a < 4; a++){
 				  mlp_predicts[a] = fx_xtof(mlp_predicts_fx[a], FIXMATH_FRAC_BITS);
 			  }
-			  //ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½
+			  //½áÊø×ª»»
             float x = static_cast<float>(bboxes[m].bbox.x);
             float y = static_cast<float>(bboxes[m].bbox.y);
             float w = static_cast<float>(bboxes[m].bbox.width);
@@ -265,9 +257,9 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
             bboxes[bbox_idx].bbox.y =
               static_cast<int32_t>((mlp_predicts[2] * 2 - 1) * h + y +
               (h - bboxes[bbox_idx].bbox.height) * 0.5 + 0.5);
-			//ï¿½ï¿½Ê¼×ªï¿½ï¿½
+			//¿ªÊ¼×ª»»
 			score = fx_xtof(score_fx, FIXMATH_FRAC_BITS);
-			//ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½
+			//½áÊø×ª»»
             bboxes[bbox_idx].score = score;
             bbox_idx++;
           }
@@ -294,8 +286,6 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
     for (int32_t j = 0; j < hierarchy_size_[i]; j++)
       proposals_nms[j] = proposals[buf_idx[j]];
   }
-  t1 = clock();
-  std::cout << "FuStDetector::Detect classifier   " << t1-t0 << std::endl;
 
   return proposals_nms[0];
 }

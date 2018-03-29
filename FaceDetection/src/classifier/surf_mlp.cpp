@@ -37,52 +37,28 @@
 namespace seeta {
 namespace fd {
 
-bool SURFMLP::Classify(float* score, float* outputs) {
-  float* dest = input_buf_.data();
-
-  //开始转换
-  std::vector<fixed_t> input_buf_fx;
-  input_buf_fx.resize(model_->GetInputDim());
-  for (int32_t i = 0; i < model_->GetInputDim(); i++){
-	  input_buf_fx[i] = fx_ftox(input_buf_[i], FIXMATH_FRAC_BITS);
-  }
-  fixed_t* dest_fx = input_buf_fx.data();
-  //结束转换
+	bool SURFMLP::Classify(fixed_t* score, fixed_t* outputs) {
+  fixed_t* dest = input_buf_.data();
 
   for (size_t i = 0; i < feat_id_.size(); i++) {
-	  feat_map_->GetFeatureVector(feat_id_[i] - 1, dest_fx);
-	  dest_fx += feat_map_->GetFeatureVectorDim(feat_id_[i]);
+	  feat_map_->GetFeatureVector(feat_id_[i] - 1, dest);
+	  dest += feat_map_->GetFeatureVectorDim(feat_id_[i]);
   }
 
-
-
-  //开始转换
-  std::vector<fixed_t> output_buf_fx;
-  output_buf_fx.resize(model_->GetOutputDim());
-  //结束转换
   
 
   output_buf_.resize(model_->GetOutputDim());
-  model_->Compute(input_buf_fx.data(), output_buf_fx.data());
-
-  //开始转换
-  for (int32_t i = 0; i < input_buf_.size(); i++){
-	  input_buf_[i] = fx_xtof(input_buf_fx[i], FIXMATH_FRAC_BITS);
-  }
-  for (int32_t i = 0; i < output_buf_.size(); i++){
-	  output_buf_[i] = fx_xtof(output_buf_fx[i], FIXMATH_FRAC_BITS);
-  }
-  //结束转换
+  model_->Compute(input_buf_.data(), output_buf_.data());
 
 
   if (score != nullptr)
     *score = output_buf_[0];
   if (outputs != nullptr) {
     std::memcpy(outputs, output_buf_.data(),
-      model_->GetOutputDim() * sizeof(float));
+		model_->GetOutputDim() * sizeof(fixed_t));
   }
 
-  return (output_buf_[0] > fx_xtof(thresh_, FIXMATH_FRAC_BITS));
+  return (output_buf_[0] > thresh_);
 }
 
 void SURFMLP::AddFeatureByID(int32_t feat_id) {

@@ -124,10 +124,15 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
   float score;
   seeta::FaceInfo wnd_info;
   seeta::Rect wnd;
-  int32_t scale_factor = 0.0;
+  float scale_factor = 0.0;
+  //��ʼת��
+  fixed_t scale_factor_fx = fx_ftox(scale_factor, FIXMATH_FRAC_BITS);
+  //����ת��
   const seeta::ImageData* img_scaled =
-    img_pyramid->GetNextScaleImage(&scale_factor);
-
+	  img_pyramid->GetNextScaleImage(&scale_factor_fx);
+  //��ʼת��
+  scale_factor = fx_xtof(scale_factor_fx, FIXMATH_FRAC_BITS);
+  //����ת��
   wnd.height = wnd.width = wnd_size_;
 
   // Sliding window
@@ -140,7 +145,7 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
     feat_map_1->Compute(img_scaled->data, img_scaled->width,
       img_scaled->height);
 
-    wnd_info.bbox.width = (((wnd_size_ * 1000000) / scale_factor) * 10 + 5) / 10;
+    wnd_info.bbox.width = static_cast<int32_t>(wnd_size_ / scale_factor + 0.5);
     wnd_info.bbox.height = wnd_info.bbox.width;
 
     int32_t max_x = img_scaled->width - wnd_size_;
@@ -151,20 +156,31 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
         wnd.x = x;
         feat_map_1->SetROI(wnd);
 				//three loops for scale_factor
-        wnd_info.bbox.x = (((x * 1000000) / scale_factor) * 10 + 5) / 10;
-        wnd_info.bbox.y = (((y * 1000000) / scale_factor) * 10 + 5) / 10;
+        wnd_info.bbox.x = static_cast<int32_t>(x / scale_factor + 0.5);
+        wnd_info.bbox.y = static_cast<int32_t>(y / scale_factor + 0.5);
 
         for (int32_t i = 0; i < hierarchy_size_[0]; i++) {
 					//four times loops for score
-			if (model_[i]->Classify(&score)) {
-				wnd_info.score = static_cast<double>(score);
+		 //��ʼת��
+			fixed_t score_fx = fx_ftox(score, FIXMATH_FRAC_BITS);
+		 //����ת��
+			if (model_[i]->Classify(&score_fx)) {
+				//��ʼת��
+				score = fx_xtof(score_fx, FIXMATH_FRAC_BITS);
+				//����ת��
+            wnd_info.score = static_cast<double>(score);
             proposals[i].push_back(wnd_info);
           }
         }
       }
     }
-
-    img_scaled = img_pyramid->GetNextScaleImage(&scale_factor);
+	//��ʼת��
+	scale_factor_fx = fx_ftox(scale_factor, FIXMATH_FRAC_BITS);
+	//����ת��
+	img_scaled = img_pyramid->GetNextScaleImage(&scale_factor_fx);
+	//��ʼת��
+	scale_factor = fx_xtof(scale_factor_fx, FIXMATH_FRAC_BITS);
+	//����ת��
   }
   clock_t t1 = clock();
   std::cout << "FuStDetector::Detect slide win   " << t1-t0 << std::endl;
@@ -215,7 +231,19 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
           feat_map->Compute(wnd_data_.data(), wnd_size_, wnd_size_);
           feat_map->SetROI(roi);
 					//loops for score
-          if (model_[model_idx]->Classify(&score, mlp_predicts)) {
+		  //��ʼת��
+		  fixed_t score_fx = fx_ftox(score, FIXMATH_FRAC_BITS);
+		  std::vector<fixed_t> mlp_predicts_fx(4);
+		  for (int32_t a = 0; a < 4; a++){
+			  mlp_predicts_fx[a] = fx_ftox(mlp_predicts[a], FIXMATH_FRAC_BITS);
+		  }
+		  //����ת��
+		  if (model_[model_idx]->Classify(&score_fx, mlp_predicts_fx.data())) {
+			  //��ʼת��
+			  for (int32_t a = 0; a < 4; a++){
+				  mlp_predicts[a] = fx_xtof(mlp_predicts_fx[a], FIXMATH_FRAC_BITS);
+			  }
+			  //����ת��
             float x = static_cast<float>(bboxes[m].bbox.x);
             float y = static_cast<float>(bboxes[m].bbox.y);
             float w = static_cast<float>(bboxes[m].bbox.width);
@@ -230,6 +258,9 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
             bboxes[bbox_idx].bbox.y =
               static_cast<int32_t>((mlp_predicts[2] * 2 - 1) * h + y +
               (h - bboxes[bbox_idx].bbox.height) * 0.5 + 0.5);
+			//��ʼת��
+			score = fx_xtof(score_fx, FIXMATH_FRAC_BITS);
+			//����ת��
             bboxes[bbox_idx].score = score;
             bbox_idx++;
           }

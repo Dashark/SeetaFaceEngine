@@ -87,8 +87,8 @@ static void ResizeImage(const seeta::ImageData & src, seeta::ImageData* dest) {
 class ImagePyramid {
  public:
   ImagePyramid()
-      : max_scale_(1.0f), min_scale_(1.0f),
-        scale_factor_(1.0f), scale_step_(0.8f),
+	  : max_scale_(fx_itox(1, FIXMATH_FRAC_BITS)), min_scale_(fx_itox(1, FIXMATH_FRAC_BITS)),
+	    scale_factor_(fx_itox(1, FIXMATH_FRAC_BITS)), scale_step_(fx_divx(8, 10, FIXMATH_FRAC_BITS)),
         width1x_(0), height1x_(0),
         width_scaled_(0), height_scaled_(0),
         buf_img_width_(2), buf_img_height_(2),
@@ -115,16 +115,16 @@ class ImagePyramid {
     img_scaled_.height = 0;
   }
 
-  inline void SetScaleStep(float step) {
-    if (step > 0.0f && step <= 1.0f)
+  inline void SetScaleStep(fixed_t step) {
+	  if (step > fx_itox(0, FIXMATH_FRAC_BITS) && step <= fx_itox(1, FIXMATH_FRAC_BITS))
       scale_step_ = step;
   }
 
-  inline void SetMinScale(float min_scale) {
+  inline void SetMinScale(fixed_t min_scale) {
     min_scale_ = min_scale;
   }
 
-  inline void SetMaxScale(float max_scale) {
+  inline void SetMaxScale(fixed_t max_scale) {
     max_scale_ = max_scale;
     scale_factor_ = max_scale;
     UpdateBufScaled();
@@ -132,8 +132,8 @@ class ImagePyramid {
 
   void SetImage1x(const uint8_t* img_data, int32_t width, int32_t height);
 
-  inline float min_scale() const { return min_scale_; }
-  inline float max_scale() const { return max_scale_; }
+  inline fixed_t min_scale() const { return min_scale_; }
+  inline fixed_t max_scale() const { return max_scale_; }
 
   inline seeta::ImageData image1x() {
     seeta::ImageData img(width1x_, height1x_, 1);
@@ -141,16 +141,16 @@ class ImagePyramid {
     return img;
   }
 
-  const seeta::ImageData* GetNextScaleImage(int32_t* scale_factor = nullptr);
+  const seeta::ImageData* GetNextScaleImage(fixed_t* scale_factor = nullptr);
 
  private:
   void UpdateBufScaled();
 
-  float max_scale_;
-  float min_scale_;
+  fixed_t max_scale_;
+  fixed_t min_scale_;
 
-  float scale_factor_;
-  float scale_step_;
+  fixed_t scale_factor_;
+  fixed_t scale_step_;
 
   int32_t width1x_;
   int32_t height1x_;

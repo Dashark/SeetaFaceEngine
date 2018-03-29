@@ -47,9 +47,9 @@ void LABBaseClassifier::SetWeights(const fixed_t* weights, int32_t num_bin) {
   //std::copy(weights, weights + num_bin_ + 1, weights_);
 }
 
-bool LABBoostedClassifier::Classify(float* score, float* outputs) {
+bool LABBoostedClassifier::Classify(fixed_t* score, fixed_t* outputs) {
   bool isPos = true;
-  float s = 0.0f;
+  fixed_t s = fx_itox(0, FIXMATH_FRAC_BITS);
   int32_t count = 0;
   seeta::fd::LABFeature* feat = feat_.data();
   std::shared_ptr<seeta::fd::LABBaseClassifier>* base = base_classifiers_.data();

@@ -181,8 +181,8 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
 	//½áÊø×ª»»
   }
 
-  fixed_t iou_thresh8 = fx_divx(fx_itox(8, FIXMATH_FRAC_BITS), fx_itox(10, FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS);
-  fixed_t iou_thresh3 = fx_divx(fx_itox(3, FIXMATH_FRAC_BITS), fx_itox(10, FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS);
+  int32_t iou_thresh8 = 80; //fx_ftox(0.8f, FIXMATH_FRAC_BITS); //fx_divx(fx_itox(8, FIXMATH_FRAC_BITS), fx_itox(10, FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS);
+  int32_t iou_thresh3 = 30; //fx_ftox(0.3f, FIXMATH_FRAC_BITS); //fx_divx(fx_itox(3, FIXMATH_FRAC_BITS), fx_itox(10, FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS);
   
   std::vector<std::vector<seeta::FaceInfo> > proposals_nms(hierarchy_size_[0]);
   for (int32_t i = 0; i < hierarchy_size_[0]; i++) {

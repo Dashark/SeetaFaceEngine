@@ -40,7 +40,7 @@ namespace seeta {
 namespace fd {
 
 void NonMaximumSuppression(std::vector<seeta::FaceInfo>* bboxes,
-  std::vector<seeta::FaceInfo>* bboxes_nms, float iou_thresh = 0.8f);
+	std::vector<seeta::FaceInfo>* bboxes_nms, fixed_t iou_thresh);
 
 }  // namespace fd
 }  // namespace seeta

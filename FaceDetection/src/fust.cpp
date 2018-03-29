@@ -181,10 +181,13 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
 	//½áÊø×ª»»
   }
 
+  fixed_t iou_thresh8 = fx_divx(fx_itox(8, FIXMATH_FRAC_BITS), fx_itox(10, FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS);
+  fixed_t iou_thresh3 = fx_divx(fx_itox(3, FIXMATH_FRAC_BITS), fx_itox(10, FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS);
+  
   std::vector<std::vector<seeta::FaceInfo> > proposals_nms(hierarchy_size_[0]);
   for (int32_t i = 0; i < hierarchy_size_[0]; i++) {
     seeta::fd::NonMaximumSuppression(&(proposals[i]),
-      &(proposals_nms[i]), 0.8f);
+		&(proposals_nms[i]), iou_thresh8);
     proposals[i].clear();
   }
 
@@ -265,12 +268,12 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
 
         if (k < num_stage_[cls_idx] - 1) {
           seeta::fd::NonMaximumSuppression(&(proposals[buf_idx[j]]),
-            &(proposals_nms[buf_idx[j]]), 0.8f);
+			  &(proposals_nms[buf_idx[j]]), iou_thresh8);
           proposals[buf_idx[j]] = proposals_nms[buf_idx[j]];
         } else {
           if (i == num_hierarchy_ - 1) {
             seeta::fd::NonMaximumSuppression(&(proposals[buf_idx[j]]),
-              &(proposals_nms[buf_idx[j]]), 0.3f);
+				&(proposals_nms[buf_idx[j]]), iou_thresh3);
             proposals[buf_idx[j]] = proposals_nms[buf_idx[j]];
           }
         }

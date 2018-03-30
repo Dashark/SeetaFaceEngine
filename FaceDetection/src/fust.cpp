@@ -124,9 +124,9 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
   float score;
   seeta::FaceInfo wnd_info;
   seeta::Rect wnd;
-  float scale_factor = 0.0;
+  //float scale_factor = 0.0;
   //开始转换
-  fixed_t scale_factor_fx = fx_ftox(scale_factor, FIXMATH_FRAC_BITS);
+  fixed_t scale_factor_fx = 0;//fx_ftox(scale_factor, FIXMATH_FRAC_BITS);
   //结束转换
   clock_t t2 = clock();
   const seeta::ImageData* img_scaled =
@@ -134,7 +134,7 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
   clock_t t3 = clock();
   std::cout << "GetNextScaleImage   " << t3-t2 << std::endl;
   //开始转换
-  scale_factor = fx_xtof(scale_factor_fx, FIXMATH_FRAC_BITS);
+  //scale_factor = fx_xtof(scale_factor_fx, FIXMATH_FRAC_BITS);
   //结束转换
   wnd.height = wnd.width = wnd_size_;
 
@@ -144,11 +144,13 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
   std::shared_ptr<seeta::fd::FeatureMap> & feat_map_1 =
     feat_map_[cls2feat_idx_[model_[0]->type()]];
 clock_t t0 = clock();
+ fixed_t ptfive = fx_ftox(0.5f, FIXMATH_FRAC_BITS);
   while (img_scaled != nullptr) {
     feat_map_1->Compute(img_scaled->data, img_scaled->width,
       img_scaled->height);
 
-    wnd_info.bbox.width = static_cast<int32_t>(wnd_size_ / scale_factor + 0.5);
+    wnd_info.bbox.width = fx_xtoi(fx_divx(fx_itox(wnd_size_, FIXMATH_FRAC_BITS), scale_factor_fx, FIXMATH_FRAC_BITS) + ptfive, FIXMATH_FRAC_BITS);
+    //     = static_cast<int32_t>(wnd_size_ / scale_factor + 0.5);
     wnd_info.bbox.height = wnd_info.bbox.width;
 
     int32_t max_x = img_scaled->width - wnd_size_;
@@ -159,8 +161,8 @@ clock_t t0 = clock();
         wnd.x = x;
         feat_map_1->SetROI(wnd);
 				//three loops for scale_factor
-        wnd_info.bbox.x = static_cast<int32_t>(x / scale_factor + 0.5);
-        wnd_info.bbox.y = static_cast<int32_t>(y / scale_factor + 0.5);
+        wnd_info.bbox.x = fx_xtoi(fx_divx(fx_itox(x, FIXMATH_FRAC_BITS), scale_factor_fx, FIXMATH_FRAC_BITS) + ptfive, FIXMATH_FRAC_BITS);//static_cast<int32_t>(x / scale_factor + 0.5);
+        wnd_info.bbox.y = fx_xtoi(fx_divx(fx_itox(y, FIXMATH_FRAC_BITS), scale_factor_fx, FIXMATH_FRAC_BITS) + ptfive, FIXMATH_FRAC_BITS); //static_cast<int32_t>(y / scale_factor + 0.5);
 
         for (int32_t i = 0; i < hierarchy_size_[0]; i++) {
 					//four times loops for score
@@ -178,11 +180,11 @@ clock_t t0 = clock();
       }
     }
 	//开始转换
-	scale_factor_fx = fx_ftox(scale_factor, FIXMATH_FRAC_BITS);
+	//scale_factor_fx = fx_ftox(scale_factor, FIXMATH_FRAC_BITS);
 	//结束转换
 	img_scaled = img_pyramid->GetNextScaleImage(&scale_factor_fx);
 	//开始转换
-	scale_factor = fx_xtof(scale_factor_fx, FIXMATH_FRAC_BITS);
+	//scale_factor = fx_xtof(scale_factor_fx, FIXMATH_FRAC_BITS);
 	//结束转换
   }
   clock_t t1 = clock();

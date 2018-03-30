@@ -128,8 +128,11 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
   //开始转换
   fixed_t scale_factor_fx = fx_ftox(scale_factor, FIXMATH_FRAC_BITS);
   //结束转换
+  clock_t t2 = clock();
   const seeta::ImageData* img_scaled =
 	  img_pyramid->GetNextScaleImage(&scale_factor_fx);
+  clock_t t3 = clock();
+  std::cout << "GetNextScaleImage   " << t3-t2 << std::endl;
   //开始转换
   scale_factor = fx_xtof(scale_factor_fx, FIXMATH_FRAC_BITS);
   //结束转换

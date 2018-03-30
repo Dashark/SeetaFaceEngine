@@ -61,23 +61,30 @@ static void ResizeImage(const seeta::ImageData & src, seeta::ImageData* dest) {
 #pragma omp for nowait
     for (int32_t y = 0; y < dest_height; y++) {
       for (int32_t x = 0; x < dest_width; x++) {
-        double lf_x_s = lf_x_scl * x;
-        double lf_y_s = lf_y_Scl * y;
+        //double lf_x_s = lf_x_scl * x; //src_width * x / dest_width;
+        //double lf_y_s = lf_y_Scl * y; //src_height * y / dest_height;
 
-        int32_t n_x_s = static_cast<int>(lf_x_s);
+        //int32_t n_x_s = static_cast<int>(lf_x_s); 
+        int32_t n_x_s = src_width * x / dest_width;
         n_x_s = (n_x_s <= (src_width - 2) ? n_x_s : (src_width - 2));
-        int32_t n_y_s = static_cast<int>(lf_y_s);
+        //int32_t n_y_s = static_cast<int>(lf_y_s); 
+        int32_t n_y_s = src_height * y / dest_height;
         n_y_s = (n_y_s <= (src_height - 2) ? n_y_s : (src_height - 2));
 
-        double lf_weight_x = lf_x_s - n_x_s;
-        double lf_weight_y = lf_y_s - n_y_s;
+        //double lf_weight_x = lf_x_s - n_x_s;//src_width * x % dest_width / dest_width;
+        int32_t lf_weight_x = (src_width * x) % dest_width;
+        int32_t lf_weight_x_1 = dest_width - lf_weight_x;
+        //double lf_weight_y = lf_y_s - n_y_s;//src_height * y % dest_height / dest_height;
+        int32_t lf_weight_y = (src_height * y) % dest_height;
+        int32_t lf_weight_y_1 = dest_height - src_height * y % dest_height;
 
-        double dest_val = (1 - lf_weight_y) * ((1 - lf_weight_x) *
-          src_data[n_y_s * src_width + n_x_s] +
-          lf_weight_x * src_data[n_y_s * src_width + n_x_s + 1]) +
-          lf_weight_y * ((1 - lf_weight_x) * src_data[(n_y_s + 1) * src_width + n_x_s] +
-          lf_weight_x * src_data[(n_y_s + 1) * src_width + n_x_s + 1]);
-
+        int32_t offset1 = n_y_s * src_width + n_x_s;
+        int32_t dest_val = lf_weight_y_1 * (lf_weight_x_1 *
+          src_data[offset1] +
+          lf_weight_x * src_data[offset1 + 1]) +
+          lf_weight_y * (lf_weight_x_1 * src_data[offset1 + src_width] +
+          lf_weight_x * src_data[offset1 + src_width + 1]);
+        dest_val /= dest_height * dest_width;
         dest_data[y * dest_width + x] = static_cast<uint8_t>(dest_val);
       }
     }

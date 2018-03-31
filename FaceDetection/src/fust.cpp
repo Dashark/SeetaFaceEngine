@@ -242,9 +242,9 @@ clock_t t0 = clock();
             x = fx_itox(bboxes[m].bbox.x, FIXMATH_FRAC_BITS);
             y = fx_itox(bboxes[m].bbox.y, FIXMATH_FRAC_BITS);
             w = fx_itox(bboxes[m].bbox.width, FIXMATH_FRAC_BITS);
-            fixed_t w2 = fx_divx(w, 2, FIXMATH_FRAC_BITS);
+            fixed_t w2 = fx_divx(w, fx_itox(2, FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS);
             h = fx_itox(bboxes[m].bbox.height, FIXMATH_FRAC_BITS);
-            fixed_t h2 = fx_divx(h, 2, FIXMATH_FRAC_BITS);
+            fixed_t h2 = fx_divx(h, fx_itox(2, FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS);
 
             mp3 = fx_mulx(mlp_predicts[3], w, FIXMATH_FRAC_BITS);
             mp32 = fx_addx(mp3, mp3);

@@ -89,7 +89,7 @@ bool LABBoostModelReader::ReadBaseClassifierParam(std::istream* input,
     input->read(reinterpret_cast<char*>(bin_buffer_), weight_len);
 	//开始转换
 	fixed_t* bin_buffer_fx = new fixed_t[num_bin_ + 1];
-	for (int32_t a; a < num_bin_ + 1; a++){
+	for (int32_t a=0; a < num_bin_ + 1; a++){
 		bin_buffer_fx[a] = fx_ftox(bin_buffer_[a], FIXMATH_FRAC_BITS);
 	}
 	//结束转换

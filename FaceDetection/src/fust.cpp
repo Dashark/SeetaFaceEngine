@@ -121,10 +121,10 @@ bool FuStDetector::LoadModel(const std::string & model_path) {
 
 std::vector<seeta::FaceInfo> FuStDetector::Detect(
     seeta::fd::ImagePyramid* img_pyramid) {
-  float score;
+  fixed_t score;
   seeta::FaceInfo wnd_info;
   seeta::Rect wnd;
-  //float scale_factor = 0.0;
+  float scale_factor = 0.0;
   //开始转换
   fixed_t scale_factor_fx = 0;//fx_ftox(scale_factor, FIXMATH_FRAC_BITS);
   //结束转换
@@ -134,7 +134,7 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
   clock_t t3 = clock();
   std::cout << "GetNextScaleImage   " << t3-t2 << std::endl;
   //开始转换
-  //scale_factor = fx_xtof(scale_factor_fx, FIXMATH_FRAC_BITS);
+  scale_factor = fx_xtof(scale_factor_fx, FIXMATH_FRAC_BITS);
   //结束转换
   wnd.height = wnd.width = wnd_size_;
 
@@ -144,51 +144,47 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
   std::shared_ptr<seeta::fd::FeatureMap> & feat_map_1 =
     feat_map_[cls2feat_idx_[model_[0]->type()]];
 clock_t t0 = clock();
- fixed_t ptfive = fx_ftox(0.5f, FIXMATH_FRAC_BITS);
+
   while (img_scaled != nullptr) {
     feat_map_1->Compute(img_scaled->data, img_scaled->width,
       img_scaled->height);
 
-    wnd_info.bbox.width = fx_xtoi(fx_divx(fx_itox(wnd_size_, FIXMATH_FRAC_BITS), scale_factor_fx, FIXMATH_FRAC_BITS) + ptfive, FIXMATH_FRAC_BITS);
-    //     = static_cast<int32_t>(wnd_size_ / scale_factor + 0.5);
+    wnd_info.bbox.width = fx_ceilx(fx_divx(fx_itox(wnd_size_, FIXMATH_FRAC_BITS), scale_factor_fx, FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS);
+    //wnd_info.bbox.width = static_cast<int32_t>(wnd_size_ / scale_factor + 0.5);
     wnd_info.bbox.height = wnd_info.bbox.width;
 
     int32_t max_x = img_scaled->width - wnd_size_;
     int32_t max_y = img_scaled->height - wnd_size_;
+    clock_t t0 = clock();
     for (int32_t y = 0; y <= max_y; y += slide_wnd_step_y_) {
       wnd.y = y;
       for (int32_t x = 0; x <= max_x; x += slide_wnd_step_x_) {
         wnd.x = x;
         feat_map_1->SetROI(wnd);
 				//three loops for scale_factor
-        wnd_info.bbox.x = fx_xtoi(fx_divx(fx_itox(x, FIXMATH_FRAC_BITS), scale_factor_fx, FIXMATH_FRAC_BITS) + ptfive, FIXMATH_FRAC_BITS);//static_cast<int32_t>(x / scale_factor + 0.5);
-        wnd_info.bbox.y = fx_xtoi(fx_divx(fx_itox(y, FIXMATH_FRAC_BITS), scale_factor_fx, FIXMATH_FRAC_BITS) + ptfive, FIXMATH_FRAC_BITS); //static_cast<int32_t>(y / scale_factor + 0.5);
+        wnd_info.bbox.x = fx_ceilx(fx_divx(fx_itox(x, FIXMATH_FRAC_BITS), scale_factor_fx, FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS);
+        //wnd_info.bbox.x = static_cast<int32_t>(x / scale_factor + 0.5);
+        wnd_info.bbox.y = fx_ceilx(fx_divx(fx_itox(y, FIXMATH_FRAC_BITS), scale_factor_fx, FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS); 
+        //wnd_info.bbox.y = static_cast<int32_t>(y / scale_factor + 0.5);
 
         for (int32_t i = 0; i < hierarchy_size_[0]; i++) {
 					//four times loops for score
-		 //开始转换
-			fixed_t score_fx = fx_ftox(score, FIXMATH_FRAC_BITS);
-		 //结束转换
-			if (model_[i]->Classify(&score_fx)) {
-				//开始转换
-				score = fx_xtof(score_fx, FIXMATH_FRAC_BITS);
-				//结束转换
-            wnd_info.score = static_cast<double>(score);
+          if (model_[i]->Classify(&score)) {
+            wnd_info.score = fx_xtod(score, FIXMATH_FRAC_BITS);
             proposals[i].push_back(wnd_info);
           }
         }
       }
     }
-	//开始转换
-	//scale_factor_fx = fx_ftox(scale_factor, FIXMATH_FRAC_BITS);
-	//结束转换
-	img_scaled = img_pyramid->GetNextScaleImage(&scale_factor_fx);
-	//开始转换
-	//scale_factor = fx_xtof(scale_factor_fx, FIXMATH_FRAC_BITS);
-	//结束转换
+    clock_t t1 = clock();
+    std::cout << "FuStDetector::Detect proposals in slide win   " << t1-t0 << std::endl;
+
+  	img_scaled = img_pyramid->GetNextScaleImage(&scale_factor_fx);
+  scale_factor = fx_xtof(scale_factor_fx, FIXMATH_FRAC_BITS);
+    std::cout << "pyramid factor  " << fx_xtof(scale_factor_fx, FIXMATH_FRAC_BITS) << std::endl;
   }
   clock_t t1 = clock();
-  std::cout << "FuStDetector::Detect slide win   " << t1-t0 << std::endl;
+  std::cout << "FuStDetector::Detect slide win   " << t1-t0 << "   proposals size   " << proposals[0].size() << std::endl;
 
   int32_t iou_thresh8 = 80; //fx_ftox(0.8f, FIXMATH_FRAC_BITS); //fx_divx(fx_itox(8, FIXMATH_FRAC_BITS), fx_itox(10, FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS);
   int32_t iou_thresh3 = 30; //fx_ftox(0.3f, FIXMATH_FRAC_BITS); //fx_divx(fx_itox(3, FIXMATH_FRAC_BITS), fx_itox(10, FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS);
@@ -205,7 +201,7 @@ clock_t t0 = clock();
 
   seeta::ImageData img = img_pyramid->image1x();
   seeta::Rect roi;
-  float mlp_predicts[4];  // @todo no hard-coded number!
+  fixed_t mlp_predicts[4];  // @todo no hard-coded number!
   roi.x = roi.y = 0;
   roi.width = roi.height = wnd_size_;
 
@@ -213,6 +209,7 @@ clock_t t0 = clock();
   int32_t model_idx = hierarchy_size_[0];
   std::vector<int32_t> buf_idx;
 
+  fixed_t x,y,h,w,mp3,mp32,mp2,mp1;
   for (int32_t i = 1; i < num_hierarchy_; i++) {
     buf_idx.resize(hierarchy_size_[i]);
     for (int32_t j = 0; j < hierarchy_size_[i]; j++) {
@@ -236,43 +233,40 @@ clock_t t0 = clock();
           if (bboxes[m].bbox.x + bboxes[m].bbox.width <= 0 ||
               bboxes[m].bbox.y + bboxes[m].bbox.height <= 0)
             continue;
-          GetWindowData(img, bboxes[m].bbox);
+          GetWindowData(img, bboxes[m].bbox);//{x = 647, y = 624, width = 315, height = 315}
           feat_map->Compute(wnd_data_.data(), wnd_size_, wnd_size_);
           feat_map->SetROI(roi);
 					//loops for score
-		  //开始转换
-		  fixed_t score_fx = fx_ftox(score, FIXMATH_FRAC_BITS);
-		  fixed_t mlp_predicts_fx[4];
-		  for (int32_t a = 0; a < 4; a++){
-			  mlp_predicts_fx[a] = fx_ftox(mlp_predicts[a], FIXMATH_FRAC_BITS);
-		  }
-		  //结束转换
-		  if (model_[model_idx]->Classify(&score_fx, mlp_predicts_fx)) {
-			  //开始转换
-			  for (int32_t a = 0; a < 4; a++){
-				  mlp_predicts[a] = fx_xtof(mlp_predicts_fx[a], FIXMATH_FRAC_BITS);
-			  }
-			  //结束转换
-            float x = static_cast<float>(bboxes[m].bbox.x);
-            float y = static_cast<float>(bboxes[m].bbox.y);
-            float w = static_cast<float>(bboxes[m].bbox.width);
-            float h = static_cast<float>(bboxes[m].bbox.height);
+          if (model_[model_idx]->Classify(&score, mlp_predicts)) {
 
-            bboxes[bbox_idx].bbox.width =
-              static_cast<int32_t>((mlp_predicts[3] * 2 - 1) * w + w + 0.5);
+            x = fx_itox(bboxes[m].bbox.x, FIXMATH_FRAC_BITS);
+            y = fx_itox(bboxes[m].bbox.y, FIXMATH_FRAC_BITS);
+            w = fx_itox(bboxes[m].bbox.width, FIXMATH_FRAC_BITS);
+            fixed_t w2 = fx_divx(w, 2, FIXMATH_FRAC_BITS);
+            h = fx_itox(bboxes[m].bbox.height, FIXMATH_FRAC_BITS);
+            fixed_t h2 = fx_divx(h, 2, FIXMATH_FRAC_BITS);
+
+            mp3 = fx_mulx(mlp_predicts[3], w, FIXMATH_FRAC_BITS);
+            mp32 = fx_addx(mp3, mp3);
+            bboxes[bbox_idx].bbox.width =fx_ceilx(mp32, FIXMATH_FRAC_BITS);
             bboxes[bbox_idx].bbox.height = bboxes[bbox_idx].bbox.width;
-            bboxes[bbox_idx].bbox.x =
-              static_cast<int32_t>((mlp_predicts[1] * 2 - 1) * w + x +
-              (w - bboxes[bbox_idx].bbox.width) * 0.5 + 0.5);
-            bboxes[bbox_idx].bbox.y =
-              static_cast<int32_t>((mlp_predicts[2] * 2 - 1) * h + y +
-              (h - bboxes[bbox_idx].bbox.height) * 0.5 + 0.5);
-			//开始转换
-			score = fx_xtof(score_fx, FIXMATH_FRAC_BITS);
-			//结束转换
-            bboxes[bbox_idx].score = score;
+            mp1 = fx_mulx(mlp_predicts[1], w, FIXMATH_FRAC_BITS);
+            mp1 = fx_addx(mp1, mp1);
+            mp1 = fx_addx(mp1, x);
+            mp1 = fx_subx(mp1, mp3);
+            mp1 = fx_subx(mp1, w2);
+            bboxes[bbox_idx].bbox.x = fx_ceilx(mp1, FIXMATH_FRAC_BITS);
+            mp2 = fx_mulx(mlp_predicts[2], h, FIXMATH_FRAC_BITS);
+            mp2 = fx_addx(mp2, mp2);
+            mp2 = fx_addx(mp2, y);
+            mp2 = fx_subx(mp2, mp3);
+            mp2 = fx_subx(mp2, h2);
+            bboxes[bbox_idx].bbox.y = fx_ceilx(mp2, FIXMATH_FRAC_BITS);
+
+            bboxes[bbox_idx].score = fx_xtod(score, FIXMATH_FRAC_BITS);
+
             bbox_idx++;
-          }
+            }
         }
         proposals[buf_idx[j]].resize(bbox_idx);
 

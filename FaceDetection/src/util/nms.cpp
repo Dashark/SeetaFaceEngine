@@ -88,7 +88,7 @@ void NonMaximumSuppression(std::vector<seeta::FaceInfo>* bboxes,
 	  int32_t area_intersect = w * h;
 	  int32_t area_union = area1 + area2 - area_intersect;
 	  //if (fx_divx(fx_itox(area_intersect, FIXMATH_FRAC_BITS), fx_itox(area_union, FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS) > iou_thresh){
-    if (area_intersect>area_union *  iou_thresh/100) {
+    if (area_intersect*100>area_union *  iou_thresh) {
         mask_merged[i] = 1;
         bboxes_nms->back().score += (*bboxes)[i].score;
       }

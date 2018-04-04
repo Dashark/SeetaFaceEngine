@@ -51,11 +51,12 @@ class LABBaseClassifier {
  public:
   LABBaseClassifier()
     : num_bin_(255), thresh_(fx_itox(0, FIXMATH_FRAC_BITS)) {
-	  weights_ = new fixed_t[num_bin_];
+	  weights_ = nullptr;
   }
 
   ~LABBaseClassifier() {
-	  delete weights_;
+    if(weights_ != nullptr)
+      delete weights_;
   }
 
   void SetWeights(const fixed_t* weights, int32_t num_bin);

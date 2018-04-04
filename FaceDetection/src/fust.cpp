@@ -124,18 +124,13 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
   fixed_t score;
   seeta::FaceInfo wnd_info;
   seeta::Rect wnd;
-  float scale_factor = 0.0;
-  //开始转换
-  fixed_t scale_factor_fx = 0;//fx_ftox(scale_factor, FIXMATH_FRAC_BITS);
-  //结束转换
+  fixed_t scale_factor_fx = 0;
   clock_t t2 = clock();
   const seeta::ImageData* img_scaled =
 	  img_pyramid->GetNextScaleImage(&scale_factor_fx);
   clock_t t3 = clock();
   std::cout << "GetNextScaleImage   " << t3-t2 << std::endl;
-  //开始转换
-  scale_factor = fx_xtof(scale_factor_fx, FIXMATH_FRAC_BITS);
-  //结束转换
+
   wnd.height = wnd.width = wnd_size_;
 
   // Sliding window
@@ -146,16 +141,18 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
 clock_t t0 = clock();
 
   while (img_scaled != nullptr) {
+    clock_t t0 = clock();
     feat_map_1->Compute(img_scaled->data, img_scaled->width,
       img_scaled->height);
+    clock_t t1 = clock();
+    std::cout << "FuStDetector::Detect feature map compute:   " << t1-t0 << std::endl;
 
     wnd_info.bbox.width = fx_ceilx(fx_divx(fx_itox(wnd_size_, FIXMATH_FRAC_BITS), scale_factor_fx, FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS);
-    //wnd_info.bbox.width = static_cast<int32_t>(wnd_size_ / scale_factor + 0.5);
     wnd_info.bbox.height = wnd_info.bbox.width;
 
     int32_t max_x = img_scaled->width - wnd_size_;
     int32_t max_y = img_scaled->height - wnd_size_;
-    clock_t t0 = clock();
+    t0 = clock();
     for (int32_t y = 0; y <= max_y; y += slide_wnd_step_y_) {
       wnd.y = y;
       for (int32_t x = 0; x <= max_x; x += slide_wnd_step_x_) {
@@ -163,9 +160,7 @@ clock_t t0 = clock();
         feat_map_1->SetROI(wnd);
 				//three loops for scale_factor
         wnd_info.bbox.x = fx_ceilx(fx_divx(fx_itox(x, FIXMATH_FRAC_BITS), scale_factor_fx, FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS);
-        //wnd_info.bbox.x = static_cast<int32_t>(x / scale_factor + 0.5);
         wnd_info.bbox.y = fx_ceilx(fx_divx(fx_itox(y, FIXMATH_FRAC_BITS), scale_factor_fx, FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS); 
-        //wnd_info.bbox.y = static_cast<int32_t>(y / scale_factor + 0.5);
 
         for (int32_t i = 0; i < hierarchy_size_[0]; i++) {
 					//four times loops for score
@@ -176,11 +171,11 @@ clock_t t0 = clock();
         }
       }
     }
-    clock_t t1 = clock();
+    t1 = clock();
     std::cout << "FuStDetector::Detect proposals in slide win   " << t1-t0 << std::endl;
 
   	img_scaled = img_pyramid->GetNextScaleImage(&scale_factor_fx);
-  scale_factor = fx_xtof(scale_factor_fx, FIXMATH_FRAC_BITS);
+
     std::cout << "pyramid factor  " << fx_xtof(scale_factor_fx, FIXMATH_FRAC_BITS) << std::endl;
   }
   clock_t t1 = clock();

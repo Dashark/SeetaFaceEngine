@@ -51,8 +51,6 @@ static void ResizeImage(const seeta::ImageData & src, seeta::ImageData* dest) {
     return;
   }
 
-  double lf_x_scl = static_cast<double>(src_width) / dest_width;
-  double lf_y_Scl = static_cast<double>(src_height) / dest_height;
   const uint8_t* src_data = src.data;
   uint8_t* dest_data = dest->data;
 
@@ -61,20 +59,17 @@ static void ResizeImage(const seeta::ImageData & src, seeta::ImageData* dest) {
 #pragma omp for nowait
     for (int32_t y = 0; y < dest_height; y++) {
       for (int32_t x = 0; x < dest_width; x++) {
-        //double lf_x_s = lf_x_scl * x; //src_width * x / dest_width;
-        //double lf_y_s = lf_y_Scl * y; //src_height * y / dest_height;
 
-        //int32_t n_x_s = static_cast<int>(lf_x_s); 
         int32_t n_x_s = src_width * x / dest_width;
         n_x_s = (n_x_s <= (src_width - 2) ? n_x_s : (src_width - 2));
-        //int32_t n_y_s = static_cast<int>(lf_y_s); 
+
         int32_t n_y_s = src_height * y / dest_height;
         n_y_s = (n_y_s <= (src_height - 2) ? n_y_s : (src_height - 2));
 
-        //double lf_weight_x = lf_x_s - n_x_s;//src_width * x % dest_width / dest_width;
+
         int32_t lf_weight_x = (src_width * x) % dest_width;
         int32_t lf_weight_x_1 = dest_width - lf_weight_x;
-        //double lf_weight_y = lf_y_s - n_y_s;//src_height * y % dest_height / dest_height;
+
         int32_t lf_weight_y = (src_height * y) % dest_height;
         int32_t lf_weight_y_1 = dest_height - src_height * y % dest_height;
 

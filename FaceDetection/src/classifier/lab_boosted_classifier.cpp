@@ -33,7 +33,7 @@
 
 #include <memory>
 #include <string>
-#include <cstring>
+//#include <cstring>
 
 namespace seeta {
 namespace fd {
@@ -42,9 +42,9 @@ void LABBaseClassifier::SetWeights(const fixed_t* weights, int32_t num_bin) {
 	if (weights_ != nullptr)
 		delete weights_;
 	weights_ = new fixed_t[num_bin + 1];
-	std::memcpy(weights_, weights, sizeof(fixed_t)*(num_bin + 1));
+	//std::memcpy(weights_, weights, sizeof(fixed_t)*(num_bin + 1));
   num_bin_ = num_bin;
-  //std::copy(weights, weights + num_bin_ + 1, weights_);
+  std::copy(weights, weights + num_bin_ + 1, weights_);
 }
 
 bool LABBoostedClassifier::Classify(fixed_t* score, fixed_t* outputs) {

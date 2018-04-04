@@ -68,7 +68,7 @@ class MLPLayer {
     if (weights == nullptr || len != input_dim_ * output_dim_) {
       return;  // @todo handle the errors!!!
     }
-    std::copy(weights, weights + input_dim_ * output_dim_, weights_.begin());
+    std::copy(weights, weights + len, weights_.begin());
   }
 
   inline void SetBias(const fixed_t* bias, int32_t len) {

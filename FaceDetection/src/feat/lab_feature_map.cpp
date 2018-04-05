@@ -31,7 +31,8 @@
 
 #include "feat/lab_feature_map.h"
 
-#include <cmath>
+#include <iostream>
+#include <ctime>
 
 #include "util/math_func.h"
 
@@ -45,9 +46,17 @@ void LABFeatureMap::Compute(const uint8_t* input, int32_t width,
   }
 
   Reshape(width, height);
+  clock_t t0 = clock();
   ComputeIntegralImages(input);
+  clock_t t1 = clock();
+  std::cout << "ComputeIntegralImages   " << t1-t0 << std::endl;
+
   ComputeRectSum();
+  t0 = clock();
+  std::cout << "ComputeRectSum   " << t0-t1 << std::endl;
   ComputeFeatureMap();
+  t1 = clock();
+  std::cout << "ComputeFeatureMap   " << t1-t0 << std::endl;
 }
 
 fixed_t LABFeatureMap::GetStdDev() const {

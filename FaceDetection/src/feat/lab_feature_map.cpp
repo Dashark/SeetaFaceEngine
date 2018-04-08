@@ -167,12 +167,14 @@ void LABFeatureMap::ComputeFeatureMap() {
   {
 #pragma omp for nowait
     for (int32_t r = 0; r <= height; r++) {
+      int32_t roff = r * width_;
+      int32_t roff1 = (r + rect_height_) * width_ + rect_width_;
       for (int32_t c = 0; c <= width; c++) {
-        uint8_t* dest = feat_map + r * width_ + c;
+        uint8_t* dest = feat_map + roff + c;
         *dest = 0;
 
-        int32_t white_rect_sum = rect_sum_[(r + rect_height_) * width_ + c + rect_width_];
-        int32_t black_rect_idx = r * width_ + c;
+        int32_t white_rect_sum = rect_sum_[c + roff1];
+        int32_t black_rect_idx = roff + c;
         *dest |= (white_rect_sum >= rect_sum_[black_rect_idx] ? 0x80 : 0x0);
         black_rect_idx += rect_width_;
         *dest |= (white_rect_sum >= rect_sum_[black_rect_idx] ? 0x40 : 0x0);

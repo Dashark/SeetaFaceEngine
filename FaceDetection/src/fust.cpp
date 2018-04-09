@@ -37,6 +37,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <sys/time.h>
 
 #include "classifier/lab_boosted_classifier.h"
 #include "classifier/surf_mlp.h"
@@ -125,11 +126,11 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
   seeta::FaceInfo wnd_info;
   seeta::Rect wnd;
   fixed_t scale_factor_fx = 0;
-  clock_t t2 = clock();
+  struct timeval tv0, tv1;
   const seeta::ImageData* img_scaled =
 	  img_pyramid->GetNextScaleImage(&scale_factor_fx);
-  clock_t t3 = clock();
-  std::cout << "GetNextScaleImage   " << t3-t2 << std::endl;
+
+
 
   wnd.height = wnd.width = wnd_size_;
 
@@ -139,14 +140,17 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
   std::shared_ptr<seeta::fd::FeatureMap> & feat_map_1 =
     feat_map_[cls2feat_idx_[model_[0]->type()]];
 clock_t t0 = clock();
-
+ gettimeofday(&tv0, NULL);
   while (img_scaled != nullptr) {
+    struct timeval tv2, tv3;
     clock_t t0 = clock();
+    gettimeofday(&tv2,NULL);
     feat_map_1->Compute(img_scaled->data, img_scaled->width,
       img_scaled->height);
+    gettimeofday(&tv3,NULL);
     clock_t t1 = clock();
     std::cout << "FuStDetector::Detect feature map compute:   " << t1-t0 << std::endl;
-
+    std::cout << "FuStDetector::Detect feature map compute:   " << (tv3.tv_sec -tv2.tv_sec)*1000000+ tv3.tv_usec - tv2.tv_usec << std::endl;
     wnd_info.bbox.width = fx_ceilx(fx_divx(fx_itox(wnd_size_, FIXMATH_FRAC_BITS), scale_factor_fx, FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS);
     wnd_info.bbox.height = wnd_info.bbox.width;
 
@@ -178,18 +182,23 @@ clock_t t0 = clock();
 
     std::cout << "pyramid factor  " << fx_xtof(scale_factor_fx, FIXMATH_FRAC_BITS) << std::endl;
   }
+  gettimeofday(&tv1, NULL);
+  std::cout << "FuStDetector::Detect slide win   " << tv1.tv_sec -tv0.tv_sec << " : " << tv1.tv_usec - tv0.tv_usec << std::endl;
   clock_t t1 = clock();
   std::cout << "FuStDetector::Detect slide win   " << t1-t0 << "   proposals size   " << proposals[0].size() << std::endl;
 
   int32_t iou_thresh8 = 80; //fx_ftox(0.8f, FIXMATH_FRAC_BITS); //fx_divx(fx_itox(8, FIXMATH_FRAC_BITS), fx_itox(10, FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS);
   int32_t iou_thresh3 = 30; //fx_ftox(0.3f, FIXMATH_FRAC_BITS); //fx_divx(fx_itox(3, FIXMATH_FRAC_BITS), fx_itox(10, FIXMATH_FRAC_BITS), FIXMATH_FRAC_BITS);
   
+  gettimeofday(&tv0, NULL);
   std::vector<std::vector<seeta::FaceInfo> > proposals_nms(hierarchy_size_[0]);
   for (int32_t i = 0; i < hierarchy_size_[0]; i++) {
     seeta::fd::NonMaximumSuppression(&(proposals[i]),
 		&(proposals_nms[i]), iou_thresh8);
     proposals[i].clear();
   }
+  gettimeofday(&tv1, NULL);
+  std::cout << "FuStDetector::Detect proposals_nms   " << tv1.tv_sec -tv0.tv_sec << " : " << tv1.tv_usec - tv0.tv_usec << std::endl;
   t0 = clock();
   std::cout << "FuStDetector::Detect proposals_nms   " << t0-t1 << std::endl;
   // Following classifiers
@@ -205,6 +214,7 @@ clock_t t0 = clock();
   std::vector<int32_t> buf_idx;
 
   fixed_t x,y,h,w,mp3,mp32,mp2,mp1;
+  gettimeofday(&tv0, NULL);
   for (int32_t i = 1; i < num_hierarchy_; i++) {
     buf_idx.resize(hierarchy_size_[i]);
     for (int32_t j = 0; j < hierarchy_size_[i]; j++) {
@@ -285,6 +295,8 @@ clock_t t0 = clock();
     for (int32_t j = 0; j < hierarchy_size_[i]; j++)
       proposals_nms[j] = proposals[buf_idx[j]];
   }
+  gettimeofday(&tv1, NULL);
+  std::cout << "FuStDetector::Detect classifier   " << tv1.tv_sec -tv0.tv_sec << " : " << tv1.tv_usec - tv0.tv_usec << std::endl;
   t1 = clock();
   std::cout << "FuStDetector::Detect classifier   " << t1-t0 << std::endl;
  

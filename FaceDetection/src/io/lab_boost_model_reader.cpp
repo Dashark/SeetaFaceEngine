@@ -63,7 +63,7 @@ bool LABBoostModelReader::ReadFeatureParam(std::istream* input,
     input->read(reinterpret_cast<char*>(&x), sizeof(int32_t));
     input->read(reinterpret_cast<char*>(&y), sizeof(int32_t));
     model->AddFeature(x, y);
-    std::cout << x << " " << y << std::endl;
+    //std::cout << x << " " << y << std::endl;
   }
 
   return !input->fail();

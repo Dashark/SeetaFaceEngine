@@ -34,7 +34,6 @@
 #include <iostream>
 #include <ctime>
 #include <sys/time.h>
-
 #include "util/math_func.h"
 
 namespace seeta {
@@ -137,10 +136,8 @@ void LABFeatureMap::ComputeIntegralImages(const uint8_t* input) {
 
   seeta::fd::MathFunction::UInt8ToInt32(input, int_img_.data(), len);
   seeta::fd::MathFunction::Square(int_img_.data(), square_int_img_.data(), len);
-  clock_t t0 = clock();
+
   Integral(int_img_.data());
-  clock_t t1 = clock();
-  std::cout << "integral time: " << t1-t0 << std::endl;
   Integral(square_int_img_.data());
 }
 

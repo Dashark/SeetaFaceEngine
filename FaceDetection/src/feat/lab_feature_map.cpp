@@ -33,6 +33,7 @@
 
 #include <iostream>
 #include <ctime>
+#include <sys/time.h>
 
 #include "util/math_func.h"
 
@@ -46,17 +47,26 @@ void LABFeatureMap::Compute(const uint8_t* input, int32_t width,
   }
 
   Reshape(width, height);
+  struct timeval tv0,tv1;
+  gettimeofday(&tv0, nullptr);
   clock_t t0 = clock();
   ComputeIntegralImages(input);
   clock_t t1 = clock();
+  gettimeofday(&tv1, nullptr);
   std::cout << "ComputeIntegralImages   " << t1-t0 << std::endl;
-
+  std::cout << "ComputeIntegralImages time of day   " << tv1.tv_sec -tv0.tv_sec << " : " << tv1.tv_usec - tv0.tv_usec << std::endl;
+  gettimeofday(&tv0, nullptr);
   ComputeRectSum();
+  gettimeofday(&tv1, nullptr);
   t0 = clock();
   std::cout << "ComputeRectSum   " << t0-t1 << std::endl;
+  std::cout << "ComputeRectSum time of day   " << tv1.tv_sec -tv0.tv_sec << " : " << tv1.tv_usec - tv0.tv_usec << std::endl;
+  gettimeofday(&tv0, nullptr);
   ComputeFeatureMap();
+  gettimeofday(&tv1, nullptr);
   t1 = clock();
   std::cout << "ComputeFeatureMap   " << t1-t0 << std::endl;
+  std::cout << "ComputeFeatureMap time of day   " << tv1.tv_sec -tv0.tv_sec << " : " << tv1.tv_usec - tv0.tv_usec << std::endl;
 }
 
 fixed_t LABFeatureMap::GetStdDev() const {
@@ -114,7 +124,9 @@ void LABFeatureMap::Reshape(int32_t width, int32_t height) {
   height_ = height;
 
   int32_t len = width_ * height_;
-  feat_map_.resize(len);
+  if(feat_map_!=nullptr)
+    delete feat_map_;
+  feat_map_ = new uint8_t[len];
   rect_sum_.resize(len);
   int_img_.resize(len);
   square_int_img_.resize(len);
@@ -125,7 +137,10 @@ void LABFeatureMap::ComputeIntegralImages(const uint8_t* input) {
 
   seeta::fd::MathFunction::UInt8ToInt32(input, int_img_.data(), len);
   seeta::fd::MathFunction::Square(int_img_.data(), square_int_img_.data(), len);
+  clock_t t0 = clock();
   Integral(int_img_.data());
+  clock_t t1 = clock();
+  std::cout << "integral time: " << t1-t0 << std::endl;
   Integral(square_int_img_.data());
 }
 
@@ -161,39 +176,78 @@ void LABFeatureMap::ComputeFeatureMap() {
   int32_t width = width_ - rect_width_ * num_rect_;
   int32_t height = height_ - rect_height_ * num_rect_;
   int32_t offset = width_ * rect_height_;
-  uint8_t* feat_map = feat_map_.data();
 
-#pragma omp parallel num_threads(SEETA_NUM_THREADS)
+  //uint8_t  buffer[400000];// = new uint8_t[width_*height_];
+  #pragma omp parallel num_threads(SEETA_NUM_THREADS)
   {
-#pragma omp for nowait
+
+    #pragma omp for nowait
     for (int32_t r = 0; r <= height; r++) {
       int32_t roff = r * width_;
-      int32_t roff1 = (r + rect_height_) * width_ + rect_width_;
+      //int32_t roff1 = (r + rect_height_) * width_ + rect_width_;
       for (int32_t c = 0; c <= width; c++) {
-        uint8_t* dest = feat_map + roff + c;
-        *dest = 0;
+        uint8_t dest = 0;//feat_map + r * width_ + c;
+        //*dest = 0;
 
-        int32_t white_rect_sum = rect_sum_[c + roff1];
-        int32_t black_rect_idx = roff + c;
-        *dest |= (white_rect_sum >= rect_sum_[black_rect_idx] ? 0x80 : 0x0);
+        int32_t white_rect_sum = rect_sum_[c + (r + rect_height_) * width_ + rect_width_];
+        int32_t black_rect_idx = r * width_ + c;
+        dest |= (white_rect_sum >= rect_sum_[black_rect_idx] ? 0x80 : 0x0);
         black_rect_idx += rect_width_;
-        *dest |= (white_rect_sum >= rect_sum_[black_rect_idx] ? 0x40 : 0x0);
+        dest |= (white_rect_sum >= rect_sum_[black_rect_idx] ? 0x40 : 0x0);
         black_rect_idx += rect_width_;
-        *dest |= (white_rect_sum >= rect_sum_[black_rect_idx] ? 0x20 : 0x0);
+        dest |= (white_rect_sum >= rect_sum_[black_rect_idx] ? 0x20 : 0x0);
         black_rect_idx += offset;
-        *dest |= (white_rect_sum >= rect_sum_[black_rect_idx] ? 0x08 : 0x0);
+        dest |= (white_rect_sum >= rect_sum_[black_rect_idx] ? 0x08 : 0x0);
         black_rect_idx += offset;
-        *dest |= (white_rect_sum >= rect_sum_[black_rect_idx] ? 0x01 : 0x0);
+        dest |= (white_rect_sum >= rect_sum_[black_rect_idx] ? 0x01 : 0x0);
         black_rect_idx -= rect_width_;
-        *dest |= (white_rect_sum >= rect_sum_[black_rect_idx] ? 0x02 : 0x0);
+        dest |= (white_rect_sum >= rect_sum_[black_rect_idx] ? 0x02 : 0x0);
         black_rect_idx -= rect_width_;
-        *dest |= (white_rect_sum >= rect_sum_[black_rect_idx] ? 0x04 : 0x0);
+        dest |= (white_rect_sum >= rect_sum_[black_rect_idx] ? 0x04 : 0x0);
         black_rect_idx -= offset;
-        *dest |= (white_rect_sum >= rect_sum_[black_rect_idx] ? 0x10 : 0x0);
+        dest |= (white_rect_sum >= rect_sum_[black_rect_idx] ? 0x10 : 0x0);
+        *(feat_map_+roff+c) = dest;
+        //buffer[roff+c] = dest;
       }
     }
   }
+  //std::copy(buffer,buffer+width_*height_,feat_map_);
+  //delete buffer;
 }
+
+  uint8_t LABFeatureMap::GetFeatureValx(int32_t offset_x, int32_t offset_y) {
+    int32_t offset = width_ * rect_height_;
+
+    int32_t r = roi_.y + offset_y;
+    int32_t c = roi_.x + offset_x;
+    int32_t roff = r * width_;
+    int32_t roff1 = (r + rect_height_) * width_ + rect_width_;
+    uint8_t* buf = feat_map_ + roff + c;
+    if(*buf != 0)
+      return *buf;
+
+    uint8_t dest = 0;
+    int32_t white_rect_sum = rect_sum_[c + roff1];
+    int32_t black_rect_idx = roff + c;
+    dest |= (white_rect_sum >= rect_sum_[black_rect_idx] ? 0x80 : 0x0);
+    black_rect_idx += rect_width_;
+    dest |= (white_rect_sum >= rect_sum_[black_rect_idx] ? 0x40 : 0x0);
+    black_rect_idx += rect_width_;
+    dest |= (white_rect_sum >= rect_sum_[black_rect_idx] ? 0x20 : 0x0);
+    black_rect_idx += offset;
+    dest |= (white_rect_sum >= rect_sum_[black_rect_idx] ? 0x08 : 0x0);
+    black_rect_idx += offset;
+    dest |= (white_rect_sum >= rect_sum_[black_rect_idx] ? 0x01 : 0x0);
+    black_rect_idx -= rect_width_;
+    dest |= (white_rect_sum >= rect_sum_[black_rect_idx] ? 0x02 : 0x0);
+    black_rect_idx -= rect_width_;
+    dest |= (white_rect_sum >= rect_sum_[black_rect_idx] ? 0x04 : 0x0);
+    black_rect_idx -= offset;
+    dest |= (white_rect_sum >= rect_sum_[black_rect_idx] ? 0x10 : 0x0);
+
+    *buf = dest;
+    return dest;
+  }
 
 }  // namespace fd
 }  // namespace seeta

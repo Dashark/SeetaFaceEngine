@@ -51,16 +51,19 @@ typedef struct LABFeature {
 
 class LABFeatureMap : public seeta::fd::FeatureMap {
  public:
-  LABFeatureMap() : rect_width_(3), rect_height_(3), num_rect_(3) {}
-  virtual ~LABFeatureMap() {}
+ LABFeatureMap() : rect_width_(3), rect_height_(3), num_rect_(3) {feat_map_ = nullptr;}
+  virtual ~LABFeatureMap() {
+    if(feat_map_ != nullptr)
+      delete feat_map_;
+  }
 
   virtual void Compute(const uint8_t* input, int32_t width, int32_t height);
 
   inline uint8_t GetFeatureVal(int32_t offset_x, int32_t offset_y) const {
 	  int off = (roi_.y + offset_y) * width_ + roi_.x + offset_x;
-    return feat_map_.data()[off];
+    return feat_map_[off];
   }
-
+  uint8_t GetFeatureValx(int32_t offset_x, int32_t offset_y);
   fixed_t GetStdDev() const;
 
  private:
@@ -91,7 +94,7 @@ class LABFeatureMap : public seeta::fd::FeatureMap {
   const int32_t rect_height_;
   const int32_t num_rect_;
 
-  std::vector<uint8_t> feat_map_;
+  uint8_t* feat_map_;
   std::vector<int32_t> rect_sum_;
   std::vector<int32_t> int_img_;
   std::vector<uint32_t> square_int_img_;

@@ -7,7 +7,7 @@ option(BUILD_EXAMPLES  "Set to ON to build examples"  ON)
 option(USE_OPENMP      "Set to ON to build use openmp"  OFF)
 option(USE_SSE         "Set to ON to build use SSE"  OFF)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fPIC -Wall")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -Wall")
 
 
 # Use C++11

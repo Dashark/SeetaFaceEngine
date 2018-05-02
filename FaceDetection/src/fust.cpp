@@ -130,7 +130,7 @@ std::vector<seeta::FaceInfo> FuStDetector::Detect(
   const seeta::ImageData* img_scaled =
 	  img_pyramid->GetNextScaleImage(&scale_factor_fx);
 
-
+    std::cout << "pyramid factor  " << fx_xtof(scale_factor_fx, FIXMATH_FRAC_BITS) << std::endl;
 
   wnd.height = wnd.width = wnd_size_;
 

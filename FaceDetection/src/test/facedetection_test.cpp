@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
   const char* img_path = argv[1];
   seeta::FaceDetection detector(argv[2]);
 
-  detector.SetMinFaceSize(40);
+  detector.SetMinFaceSize(80);
   detector.SetScoreThresh(2.f);
   detector.SetImagePyramidScaleFactor(0.8f);
   detector.SetWindowStep(4, 4);
@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
     cv::rectangle(img, face_rect, CV_RGB(0, 0, 255), 4, 8, 0);
   }
 
-  cv::namedWindow("Test", cv::WINDOW_AUTOSIZE);
+  cv::namedWindow("Test", cv::WINDOW_NORMAL);
   cv::imshow("Test", img);
   cv::waitKey(0);
   cv::destroyAllWindows();

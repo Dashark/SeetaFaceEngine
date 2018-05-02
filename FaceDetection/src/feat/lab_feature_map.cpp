@@ -33,6 +33,7 @@
 
 #include <iostream>
 #include <ctime>
+#include <string.h>
 #include <sys/time.h>
 #include "util/math_func.h"
 
@@ -153,7 +154,7 @@ void LABFeatureMap::ComputeRectSum() {
 
 #pragma omp parallel num_threads(SEETA_NUM_THREADS)
   {
-#pragma omp for nowait
+#pragma omp for nowait schedule(guided)
     for (int32_t i = 1; i <= height; i++) {
       const int32_t* top_left = int_img + (i - 1) * width_;
       const int32_t* top_right = top_left + rect_width_ - 1;
@@ -174,20 +175,20 @@ void LABFeatureMap::ComputeFeatureMap() {
   int32_t height = height_ - rect_height_ * num_rect_;
   int32_t offset = width_ * rect_height_;
 
-  //uint8_t  buffer[400000];// = new uint8_t[width_*height_];
+
   #pragma omp parallel num_threads(SEETA_NUM_THREADS)
   {
-
-    #pragma omp for nowait
+    uint8_t*  buffer = new uint8_t[width_*height_];
+    memset(buffer, 0, width_*height_);
+#pragma omp for nowait schedule(static)
     for (int32_t r = 0; r <= height; r++) {
       int32_t roff = r * width_;
-      //int32_t roff1 = (r + rect_height_) * width_ + rect_width_;
+      int32_t roff1 = (r + rect_height_) * width_ + rect_width_;
       for (int32_t c = 0; c <= width; c++) {
-        uint8_t dest = 0;//feat_map + r * width_ + c;
-        //*dest = 0;
+        uint8_t dest = 0;
 
-        int32_t white_rect_sum = rect_sum_[c + (r + rect_height_) * width_ + rect_width_];
-        int32_t black_rect_idx = r * width_ + c;
+        int32_t white_rect_sum = rect_sum_[c + roff1];
+        int32_t black_rect_idx = roff + c;
         dest |= (white_rect_sum >= rect_sum_[black_rect_idx] ? 0x80 : 0x0);
         black_rect_idx += rect_width_;
         dest |= (white_rect_sum >= rect_sum_[black_rect_idx] ? 0x40 : 0x0);
@@ -204,9 +205,10 @@ void LABFeatureMap::ComputeFeatureMap() {
         black_rect_idx -= offset;
         dest |= (white_rect_sum >= rect_sum_[black_rect_idx] ? 0x10 : 0x0);
         *(feat_map_+roff+c) = dest;
-        //buffer[roff+c] = dest;
+        //*(buffer+roff+c) = dest;
       }
     }
+    delete buffer;
   }
   //std::copy(buffer,buffer+width_*height_,feat_map_);
   //delete buffer;

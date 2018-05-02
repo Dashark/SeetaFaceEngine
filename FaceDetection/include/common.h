@@ -55,7 +55,7 @@
 #ifdef USE_OPENMP
 #include <omp.h>
 
-#define SEETA_NUM_THREADS 2
+#define SEETA_NUM_THREADS 1
 #endif
 
 namespace seeta {
